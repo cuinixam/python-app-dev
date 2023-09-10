@@ -1,0 +1,18 @@
+# Changes here will be overwritten by Copier
+_commit: e53e38d
+_src_path: .
+copyright_year: '2023'
+documentation: true
+email: cuinixam@me.com
+full_name: cuinixam
+github_username: cuinixam
+initial_commit: false
+open_source_license: MIT
+package_name: cuinixam_app_dev
+project_name: Cuinixam App Development
+project_short_description: My application development modules.
+project_slug: cuinixam-app-dev
+run_poetry_install: false
+setup_github: false
+setup_pre_commit: false
+

@@ -1,0 +1,45 @@
+<mxfile host="65bd71144e">
+    <diagram id="dKXiapY4Z188ZlKQCg-L" name="Page-1">
+        <mxGraphModel dx="2194" dy="976" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="AaPV8S0qihDRmsCafewk-29" value="View" style="html=1;" parent="1" vertex="1">
+                    <mxGeometry x="200" y="80" width="160" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="AaPV8S0qihDRmsCafewk-30" value="EventManager" style="html=1;" parent="1" vertex="1">
+                    <mxGeometry x="480" y="160" width="160" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="AaPV8S0qihDRmsCafewk-35" value="trigger event" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;shadow=0;sketch=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="AaPV8S0qihDRmsCafewk-29" target="AaPV8S0qihDRmsCafewk-30" edge="1">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <mxPoint x="290" y="230" as="sourcePoint"/>
+                        <mxPoint x="370" y="230" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="AaPV8S0qihDRmsCafewk-36" value="Presenter" style="html=1;" parent="1" vertex="1">
+                    <mxGeometry x="200" y="240" width="160" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="AaPV8S0qihDRmsCafewk-37" value="update view data" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;shadow=0;sketch=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" parent="1" source="AaPV8S0qihDRmsCafewk-36" target="AaPV8S0qihDRmsCafewk-29" edge="1">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <mxPoint x="320" y="155" as="sourcePoint"/>
+                        <mxPoint x="490" y="155" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="AaPV8S0qihDRmsCafewk-38" value="notify event" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;shadow=0;sketch=0;entryX=1.006;entryY=0.342;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryPerimeter=0;" parent="1" source="AaPV8S0qihDRmsCafewk-30" target="AaPV8S0qihDRmsCafewk-36" edge="1">
+                    <mxGeometry x="-0.2197" y="-7" width="80" relative="1" as="geometry">
+                        <mxPoint x="320" y="155" as="sourcePoint"/>
+                        <mxPoint x="480" y="215" as="targetPoint"/>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="AaPV8S0qihDRmsCafewk-41" value="subscribe to event" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;shadow=0;sketch=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;exitX=0.995;exitY=0.627;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="AaPV8S0qihDRmsCafewk-36" target="AaPV8S0qihDRmsCafewk-30" edge="1">
+                    <mxGeometry x="-0.1742" y="-22" width="80" relative="1" as="geometry">
+                        <mxPoint x="330" y="165" as="sourcePoint"/>
+                        <mxPoint x="490" y="225" as="targetPoint"/>
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
