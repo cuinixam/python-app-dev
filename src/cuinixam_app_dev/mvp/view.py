@@ -1,9 +1,8 @@
 from typing import Protocol
 
+from .event_manager import EventManager
+
 
 class View(Protocol):
-    def update_text(self, text: str) -> None:
-        ...
-
-    def mainloop(self) -> None:
+    def __init__(self, event_manager: EventManager) -> None:
         ...
