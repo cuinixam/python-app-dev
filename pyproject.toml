@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cuinixam-app-dev"
-version = "0.1.0"
+version = "0.1.1"
 description = "My application development modules."
 authors = ["cuinixam <me@cuinixam.com>"]
 license = "MIT"
