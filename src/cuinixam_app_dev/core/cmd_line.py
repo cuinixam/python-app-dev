@@ -1,7 +1,7 @@
 import dataclasses
 from abc import ABC, abstractmethod
 from argparse import ArgumentError, ArgumentParser, Namespace
-from typing import Dict, List, Type
+from typing import Any, Dict, List, Type, Union
 
 from .docs_utils import fulfills
 from .logging import logger
@@ -87,6 +87,14 @@ class CommandLineHandlerBuilder:
         return self
 
 
+def is_type_optional(some_type: Any) -> bool:
+    return (
+        hasattr(some_type, "__origin__")
+        and some_type.__origin__ is Union
+        and type(None) in some_type.__args__
+    )
+
+
 def register_arguments_for_config_dataclass(
     parser: ArgumentParser, config_dataclass: Type  # type: ignore
 ) -> None:
@@ -103,14 +111,15 @@ def register_arguments_for_config_dataclass(
             "help", f"Value for {field_name}. Default: {parameter_default}"
         )
         parameter_name = field_name.replace("_", "-")
-
-        # TODO: this should be false if the type is Optional
-        parameter_required = False if parameter_default else True
+        parameter_type = field.type
+        parameter_required = not (
+            is_type_optional(parameter_type) or parameter_default is not None
+        )
 
         parser.add_argument(
             f"--{parameter_name}",
             required=parameter_required,
-            type=field.type,
+            type=parameter_type,
             default=parameter_default,
             help=parameter_help,
         )

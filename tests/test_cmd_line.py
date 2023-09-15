@@ -1,13 +1,14 @@
 from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List
+from typing import List, Optional, Union
 
 import pytest
 
 from cuinixam_app_dev.core.cmd_line import (
     Command,
     CommandLineHandlerBuilder,
+    is_type_optional,
     register_arguments_for_config_dataclass,
 )
 from cuinixam_app_dev.core.docs_utils import validates
@@ -72,10 +73,24 @@ def test_duplicate_commands():
 class MyConfigDataclass:
     my_first_arg: Path = field(metadata={"help": "Some help for arg1."})
     arg: str = field(default="value1", metadata={"help": "Some help for arg1."})
+    opt_arg: Optional[str] = field(
+        default=None, metadata={"help": "Some help for arg1."}
+    )
+
+
+def test_is_type_optional():
+    assert is_type_optional(Optional[str])
+    assert not is_type_optional(str)
+    assert is_type_optional(Union[Optional[Path], str])
+    assert not is_type_optional(Union[Path, str])
 
 
 def test_register_arguments_for_config_dataclass():
     parser = ArgumentParser()
     register_arguments_for_config_dataclass(parser, MyConfigDataclass)
     args = parser.parse_args(["--my-first-arg", "my/path", "--arg", "value2"])
-    assert vars(args) == {"my_first_arg": Path("my/path"), "arg": "value2"}
+    assert vars(args) == {
+        "my_first_arg": Path("my/path"),
+        "arg": "value2",
+        "opt_arg": None,
+    }
