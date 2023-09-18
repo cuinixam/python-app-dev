@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v1.0.0 (2023-09-18)
+
+### Feature
+
+* Rename module to py-app-dev ([`206b8ac`](https://github.com/cuinixam/python-app-dev/commit/206b8ac6c5e43cb36fdf4172fe7b14c782185329))
+
+### Breaking
+
+* rename module to py-app-dev ([`206b8ac`](https://github.com/cuinixam/python-app-dev/commit/206b8ac6c5e43cb36fdf4172fe7b14c782185329))
+
 ## v0.1.1 (2023-09-15)
 
 ### Fix
