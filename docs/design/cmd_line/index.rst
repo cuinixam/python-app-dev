@@ -45,7 +45,7 @@ Requirements
 Implementation
 --------------
 
-.. automodule:: cuinixam_app_dev.core.cmd_line
+.. automodule:: py_app_dev.core.cmd_line
    :members:
    :show-inheritance:
 

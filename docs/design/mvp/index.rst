@@ -71,6 +71,6 @@ When an event is triggered, the EventManager notifies all registered Observers b
 
 By using the Observer pattern with the EventManager class, the View can raise events without knowing anything about the Presenter, and the Presenter can handle events without knowing anything about the View. This promotes a more modular and flexible architecture, making it easier to develop and maintain complex systems.
 
-.. autoclass:: cuinixam_app_dev.mvp.event_manager::EventManager
+.. autoclass:: py_app_dev.mvp.event_manager::EventManager
    :members:
    :undoc-members:

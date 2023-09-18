@@ -3,7 +3,7 @@ from enum import auto
 
 import pytest
 
-from cuinixam_app_dev.mvp.event_manager import EventID, EventManager
+from py_app_dev.mvp.event_manager import EventID, EventManager
 
 
 class MyEventID(EventID):

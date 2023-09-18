@@ -4,7 +4,7 @@ from typing import List
 
 import pytest
 
-from cuinixam_app_dev.core.runnable import Executor, RunInfoStatus, Runnable
+from py_app_dev.core.runnable import Executor, RunInfoStatus, Runnable
 
 
 class TestRunnable(Runnable):

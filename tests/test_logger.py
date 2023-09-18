@@ -1,5 +1,5 @@
-from cuinixam_app_dev.core.docs_utils import validates
-from cuinixam_app_dev.core.logging import logger, setup_logger, time_it
+from py_app_dev.core.docs_utils import validates
+from py_app_dev.core.logging import logger, setup_logger, time_it
 
 
 @validates("REQ-LOGGING_FILE-0.0.1")

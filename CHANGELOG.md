@@ -12,4 +12,4 @@
 
 ### Feature
 
-* Make view class generic ([`3a641b7`](https://github.com/cuinixam/cuinixam-app-dev/commit/3a641b74839639351661d8a230c46662ad56e7f0))
+* Make view class generic ([`3a641b7`](https://github.com/cuinixam/python-app-dev/commit/3a641b74839639351661d8a230c46662ad56e7f0))

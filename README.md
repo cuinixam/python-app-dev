@@ -1,14 +1,14 @@
 # Cuinixam App Development
 
 <p align="center">
-  <a href="https://github.com/cuinixam/cuinixam-app-dev/actions/workflows/ci.yml?query=branch%3Amain">
-    <img src="https://img.shields.io/github/actions/workflow/status/cuinixam/cuinixam-app-dev/ci.yml?branch=main&label=CI&logo=github&style=flat-square" alt="CI Status" >
+  <a href="https://github.com/cuinixam/python-app-dev/actions/workflows/ci.yml?query=branch%3Amain">
+    <img src="https://img.shields.io/github/actions/workflow/status/cuinixam/python-app-dev/ci.yml?branch=main&label=CI&logo=github&style=flat-square" alt="CI Status" >
   </a>
-  <a href="https://cuinixam-app-dev.readthedocs.io">
-    <img src="https://img.shields.io/readthedocs/cuinixam-app-dev.svg?logo=read-the-docs&logoColor=fff&style=flat-square" alt="Documentation Status">
+  <a href="https://python-app-dev.readthedocs.io">
+    <img src="https://img.shields.io/readthedocs/python-app-dev.svg?logo=read-the-docs&logoColor=fff&style=flat-square" alt="Documentation Status">
   </a>
-  <a href="https://codecov.io/gh/cuinixam/cuinixam-app-dev">
-    <img src="https://img.shields.io/codecov/c/github/cuinixam/cuinixam-app-dev.svg?logo=codecov&logoColor=fff&style=flat-square" alt="Test coverage percentage">
+  <a href="https://codecov.io/gh/cuinixam/python-app-dev">
+    <img src="https://img.shields.io/codecov/c/github/cuinixam/python-app-dev.svg?logo=codecov&logoColor=fff&style=flat-square" alt="Test coverage percentage">
   </a>
 </p>
 <p align="center">
@@ -23,11 +23,11 @@
   </a>
 </p>
 <p align="center">
-  <a href="https://pypi.org/project/cuinixam-app-dev/">
-    <img src="https://img.shields.io/pypi/v/cuinixam-app-dev.svg?logo=python&logoColor=fff&style=flat-square" alt="PyPI Version">
+  <a href="https://pypi.org/project/py-app-dev/">
+    <img src="https://img.shields.io/pypi/v/py-app-dev.svg?logo=python&logoColor=fff&style=flat-square" alt="PyPI Version">
   </a>
-  <img src="https://img.shields.io/pypi/pyversions/cuinixam-app-dev.svg?style=flat-square&logo=python&amp;logoColor=fff" alt="Supported Python versions">
-  <img src="https://img.shields.io/pypi/l/cuinixam-app-dev.svg?style=flat-square" alt="License">
+  <img src="https://img.shields.io/pypi/pyversions/py-app-dev.svg?style=flat-square&logo=python&amp;logoColor=fff" alt="Supported Python versions">
+  <img src="https://img.shields.io/pypi/l/py-app-dev.svg?style=flat-square" alt="License">
 </p>
 
 My application development modules.
@@ -36,7 +36,7 @@ My application development modules.
 
 Install this via pip (or your favourite package manager):
 
-`pip install cuinixam_app_dev`
+`pip install py_app_dev`
 
 ## Start developing
 

@@ -8,10 +8,10 @@ full_name: cuinixam
 github_username: cuinixam
 initial_commit: false
 open_source_license: MIT
-package_name: cuinixam_app_dev
+package_name: py_app_dev
 project_name: Cuinixam App Development
 project_short_description: My application development modules.
-project_slug: cuinixam-app-dev
+project_slug: py-app-dev
 run_poetry_install: false
 setup_github: false
 setup_pre_commit: false

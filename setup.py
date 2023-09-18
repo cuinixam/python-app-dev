@@ -6,4 +6,4 @@
 import setuptools
 
 if __name__ == "__main__":
-    setuptools.setup(name="cuinixam-app-dev")
+    setuptools.setup(name="py-app-dev")

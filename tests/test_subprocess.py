@@ -1,7 +1,7 @@
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from cuinixam_app_dev.core.subprocess import SubprocessExecutor, which
+from py_app_dev.core.subprocess import SubprocessExecutor, which
 
 
 def test_get_app_path():

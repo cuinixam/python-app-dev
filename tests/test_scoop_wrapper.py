@@ -5,8 +5,8 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from cuinixam_app_dev.core.exceptions import UserNotificationException
-from cuinixam_app_dev.core.scoop_wrapper import (
+from py_app_dev.core.exceptions import UserNotificationException
+from py_app_dev.core.scoop_wrapper import (
     InstalledScoopApp,
     ScoopFileElement,
     ScoopInstallConfigFile,
@@ -17,7 +17,7 @@ from cuinixam_app_dev.core.scoop_wrapper import (
 def create_scoop_wrapper(scoop_executable: Optional[Path]) -> ScoopWrapper:
     """Patch the 'which' function to return a valid path to the scoop executable."""
     with patch(
-        "cuinixam_app_dev.core.scoop_wrapper.which",
+        "py_app_dev.core.scoop_wrapper.which",
         return_value=scoop_executable,
     ):
         scoop_wrapper = ScoopWrapper()

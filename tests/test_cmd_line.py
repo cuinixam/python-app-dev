@@ -5,13 +5,13 @@ from typing import List, Optional, Union
 
 import pytest
 
-from cuinixam_app_dev.core.cmd_line import (
+from py_app_dev.core.cmd_line import (
     Command,
     CommandLineHandlerBuilder,
     is_type_optional,
     register_arguments_for_config_dataclass,
 )
-from cuinixam_app_dev.core.docs_utils import validates
+from py_app_dev.core.docs_utils import validates
 
 
 class MockCommand(Command):

@@ -44,7 +44,7 @@ Requirements
 Implementation
 --------------
 
-.. automodule:: cuinixam_app_dev.core.logging
+.. automodule:: py_app_dev.core.logging
    :members:
    :show-inheritance:
 
