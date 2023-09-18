@@ -9,7 +9,7 @@ github_username: cuinixam
 initial_commit: false
 open_source_license: MIT
 package_name: py_app_dev
-project_name: Cuinixam App Development
+project_name: Python App Development
 project_short_description: My application development modules.
 project_slug: py-app-dev
 run_poetry_install: false

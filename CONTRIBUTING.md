@@ -24,7 +24,7 @@ Look through the GitHub issues for features. Anything tagged with "enhancement" 
 
 ### Write Documentation
 
-Cuinixam App Development could always use more documentation, whether as part of the official Cuinixam App Development docs, in docstrings, or even on the web in blog posts, articles, and such.
+Python App Development could always use more documentation, whether as part of the official Python App Development docs, in docstrings, or even on the web in blog posts, articles, and such.
 
 ### Submit Feedback
 

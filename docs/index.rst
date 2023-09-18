@@ -1,4 +1,4 @@
-Welcome to Cuinixam App Development documentation
+Welcome to Python App Development documentation
 #################################################
 
 

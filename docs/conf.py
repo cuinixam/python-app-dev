@@ -18,7 +18,7 @@ for path in ["src", "tests"]:
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "Cuinixam App Development"
+project = "Python App Development"
 copyright = "2023, cuinixam"
 author = "cuinixam"
 release = "0.0.0"

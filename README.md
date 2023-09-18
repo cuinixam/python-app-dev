@@ -1,4 +1,4 @@
-# Cuinixam App Development
+# Python App Development
 
 <p align="center">
   <a href="https://github.com/cuinixam/python-app-dev/actions/workflows/ci.yml?query=branch%3Amain">
