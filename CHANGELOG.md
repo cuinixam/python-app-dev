@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.2.0 (2023-09-30)
+
+### Feature
+
+* Support directories as dependencies ([`da98390`](https://github.com/cuinixam/python-app-dev/commit/da983901e3c4d4b354ab7c57f61859962391cef7))
+
 ## v1.1.0 (2023-09-30)
 
 ### Feature
