@@ -52,12 +52,18 @@ class Executor:
 
     @staticmethod
     def get_file_hash(path: Path) -> str:
-        with open(path, "rb") as file:
-            bytes = file.read()
-            readable_hash = hashlib.sha256(bytes).hexdigest()
-            return readable_hash
+        if path.is_file():
+            with open(path, "rb") as file:
+                bytes = file.read()
+                readable_hash = hashlib.sha256(bytes).hexdigest()
+                return readable_hash
+        elif path.is_dir():
+            return ""  # Return empty string for directories
+        else:
+            raise ValueError(f"Path {path} is neither a file nor a directory.")
 
     def store_run_info(self, runnable: Runnable) -> None:
+        """TODO: support directories. One shall just check if the directory exists"""
         file_info = {
             "inputs": {
                 str(path): self.get_file_hash(path) for path in runnable.get_inputs()

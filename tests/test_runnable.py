@@ -69,3 +69,43 @@ def test_file_removed(executor, tmp_path):
     executor.execute(runnable)
     os.remove(output_path)
     assert executor.previous_run_info_matches(runnable) == RunInfoStatus.FILE_NOT_FOUND
+
+
+def test_directory_exists(executor, tmp_path):
+    """Test that Executor correctly handles existing directories."""
+    input_dir = tmp_path / "input_dir"
+    output_dir = tmp_path / "output_dir"
+    input_dir.mkdir()
+    output_dir.mkdir()
+    runnable = TestRunnable(name="test5", inputs=[input_dir], outputs=[output_dir])
+    executor.execute(runnable)
+    assert executor.previous_run_info_matches(runnable) == RunInfoStatus.MATCH
+
+
+def test_directory_removed(executor, tmp_path):
+    """Test that Executor correctly detects when a directory has been removed."""
+    input_dir = tmp_path / "input_dir"
+    output_dir = tmp_path / "output_dir"
+    input_dir.mkdir()
+    output_dir.mkdir()
+    runnable = TestRunnable(name="test6", inputs=[input_dir], outputs=[output_dir])
+    executor.execute(runnable)
+    input_dir.rmdir()
+    assert executor.previous_run_info_matches(runnable) == RunInfoStatus.FILE_NOT_FOUND
+
+
+def test_mixed_files_and_directories(executor, tmp_path):
+    """Test that Executor correctly handles a mix of files and directories."""
+    input_file = tmp_path / "input.txt"
+    input_dir = tmp_path / "input_dir"
+    output_file = tmp_path / "output.txt"
+    output_dir = tmp_path / "output_dir"
+    input_file.write_text("input")
+    input_dir.mkdir()
+    output_file.write_text("output")
+    output_dir.mkdir()
+    runnable = TestRunnable(
+        name="test7", inputs=[input_file, input_dir], outputs=[output_file, output_dir]
+    )
+    executor.execute(runnable)
+    assert executor.previous_run_info_matches(runnable) == RunInfoStatus.MATCH
