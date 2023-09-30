@@ -1,8 +1,8 @@
 from enum import Enum
-from typing import Callable, Dict, List
+from typing import Any, Callable, Dict, List
 
-EventCallback = Callable[[], None]
-EventTrigger = Callable[[], None]
+EventCallback = Callable[..., None]
+EventTrigger = Callable[..., None]
 
 
 class EventID(Enum):
@@ -10,19 +10,23 @@ class EventID(Enum):
 
 
 class EventManager:
-    """Manages events and their subscribers."""
+    """
+    Manages events and their subscribers. One can register callbacks to specific events
+    with any number of arguments. When an event is triggered, all subscribers are called
+    TODO: There is no check if the callback has the correct number of arguments.
+    """
 
     def __init__(self) -> None:
         self._events: Dict[EventID, List[EventCallback]] = {}
 
     def create_event_trigger(self, event_id: EventID) -> EventTrigger:
         """Creates a lambda function that can be used to trigger a specific event."""
-        return lambda: self._trigger_event(event_id)
+        return lambda *args, **kwargs: self._trigger_event(event_id, *args, **kwargs)
 
-    def _trigger_event(self, event_id: EventID) -> None:
+    def _trigger_event(self, event_id: EventID, *args: Any, **kwargs: Any) -> None:
         """Triggers an event and calls all subscribers."""
         for callback in self._events.get(event_id, []):
-            callback()
+            callback(*args, **kwargs)
 
     def subscribe(self, event_id: EventID, callback: EventCallback) -> None:
         """Subscribes a callback to an event."""
