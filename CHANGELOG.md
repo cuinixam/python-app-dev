@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v1.1.0 (2023-09-30)
+
+### Feature
+
+* Support callbacks with any number of args ([`5304ca6`](https://github.com/cuinixam/python-app-dev/commit/5304ca6f94e270792a2c742dfb23f7d20a5abcd0))
+
+### Documentation
+
+* Remove username from project title ([`991cf61`](https://github.com/cuinixam/python-app-dev/commit/991cf61ab45533a1d31e356a9d6c2e02c276ff17))
+
 ## v1.0.0 (2023-09-18)
 
 ### Feature
