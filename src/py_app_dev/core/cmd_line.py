@@ -111,15 +111,25 @@ def register_arguments_for_config_dataclass(
             "help", f"Value for {field_name}. Default: {parameter_default}"
         )
         parameter_name = field_name.replace("_", "-")
+        parameter_action = field.metadata.get("action", None)
         parameter_type = field.type
         parameter_required = not (
             is_type_optional(parameter_type) or parameter_default is not None
         )
 
-        parser.add_argument(
-            f"--{parameter_name}",
-            required=parameter_required,
-            type=parameter_type,
-            default=parameter_default,
-            help=parameter_help,
-        )
+        if parameter_action:
+            parser.add_argument(
+                f"--{parameter_name}",
+                required=parameter_required,
+                default=parameter_default,
+                action=parameter_action,
+                help=parameter_help,
+            )
+        else:
+            parser.add_argument(
+                f"--{parameter_name}",
+                required=parameter_required,
+                type=parameter_type,
+                default=parameter_default,
+                help=parameter_help,
+            )

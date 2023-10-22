@@ -76,6 +76,13 @@ class MyConfigDataclass:
     opt_arg: Optional[str] = field(
         default=None, metadata={"help": "Some help for arg1."}
     )
+    opt_arg_bool: Optional[bool] = field(
+        default=False,
+        metadata={
+            "help": "Some help for arg1.",
+            "action": "store_true",
+        },
+    )
 
 
 def test_is_type_optional():
@@ -93,4 +100,17 @@ def test_register_arguments_for_config_dataclass():
         "my_first_arg": Path("my/path"),
         "arg": "value2",
         "opt_arg": None,
+        "opt_arg_bool": False,
+    }
+
+
+def test_register_arguments_with_action_store_true():
+    parser = ArgumentParser()
+    register_arguments_for_config_dataclass(parser, MyConfigDataclass)
+    args = parser.parse_args(["--my-first-arg", "my/path", "--opt-arg-bool"])
+    assert vars(args) == {
+        "my_first_arg": Path("my/path"),
+        "arg": "value1",
+        "opt_arg": None,
+        "opt_arg_bool": True,
     }
