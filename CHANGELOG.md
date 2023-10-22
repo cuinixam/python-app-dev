@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.3.0 (2023-10-22)
+
+### Feature
+
+* Support registering arguments with action ([`0fc0261`](https://github.com/cuinixam/python-app-dev/commit/0fc02617712afdacd63b622bf69114542009d64e))
+
 ## v1.2.0 (2023-09-30)
 
 ### Feature
