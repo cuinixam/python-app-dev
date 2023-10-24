@@ -4,7 +4,7 @@ import json
 from abc import ABC, abstractmethod
 from enum import Enum
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from .logging import logger
 
@@ -52,25 +52,34 @@ class Executor:
         self.cache_dir = cache_dir
 
     @staticmethod
-    def get_file_hash(path: Path) -> str:
+    def get_file_hash(path: Path) -> Optional[str]:
         if path.is_file():
             with open(path, "rb") as file:
                 bytes = file.read()
                 readable_hash = hashlib.sha256(bytes).hexdigest()
                 return readable_hash
+        # Return special string for directories instead of hashing the whole directory
         elif path.is_dir():
-            return ""  # Return empty string for directories
+            return "IS_DIR"
+        # Return None if path does not exist
         else:
-            raise ValueError(f"Path {path} is neither a file nor a directory.")
+            return None
 
     def store_run_info(self, runnable: Runnable) -> None:
-        """TODO: support directories. One shall just check if the directory exists"""
+        def file_hash_to_str(file_hash: Optional[str]) -> str:
+            if file_hash is None:
+                return "NOT_FOUND"
+            else:
+                return file_hash
+
         file_info = {
             "inputs": {
-                str(path): self.get_file_hash(path) for path in runnable.get_inputs()
+                str(path): file_hash_to_str(self.get_file_hash(path))
+                for path in runnable.get_inputs()
             },
             "outputs": {
-                str(path): self.get_file_hash(path) for path in runnable.get_outputs()
+                str(path): file_hash_to_str(self.get_file_hash(path))
+                for path in runnable.get_outputs()
             },
         }
 
