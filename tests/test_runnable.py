@@ -109,3 +109,12 @@ def test_mixed_files_and_directories(executor, tmp_path):
     )
     executor.execute(runnable)
     assert executor.previous_run_info_matches(runnable) == RunInfoStatus.MATCH
+
+
+def test_no_inputs_and_no_outputs(executor):
+    """Test that Executor correctly handles a runnable with no inputs and no outputs."""
+    runnable = TestRunnable(name="test8")
+    executor.execute(runnable)
+    assert (
+        executor.previous_run_info_matches(runnable) == RunInfoStatus.NOTHING_TO_CHECK
+    )

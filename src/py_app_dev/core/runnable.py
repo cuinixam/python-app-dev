@@ -32,6 +32,7 @@ class RunInfoStatus(Enum):
     NO_INFO = (True, "No previous execution info found.")
     FILE_NOT_FOUND = (True, "File not found.")
     FILE_CHANGED = (True, "File has changed.")
+    NOTHING_TO_CHECK = (True, "Nothing to be checked. Assume it shall always run.")
 
     def __init__(self, should_run: bool, message: str) -> None:
         self.should_run = should_run
@@ -90,13 +91,18 @@ class Executor:
         with run_info_path.open() as f:
             previous_info = json.load(f)
 
-        for file_type in ["inputs", "outputs"]:
-            for path_str, previous_hash in previous_info[file_type].items():
-                path = Path(path_str)
-                if not path.exists():
-                    return RunInfoStatus.FILE_NOT_FOUND
-                elif self.get_file_hash(path) != previous_hash:
-                    return RunInfoStatus.FILE_CHANGED
+        # Check if there is anything to be checked
+        if any(len(previous_info[file_type]) for file_type in ["inputs", "outputs"]):
+            for file_type in ["inputs", "outputs"]:
+                for path_str, previous_hash in previous_info[file_type].items():
+                    path = Path(path_str)
+                    if not path.exists():
+                        return RunInfoStatus.FILE_NOT_FOUND
+                    elif self.get_file_hash(path) != previous_hash:
+                        return RunInfoStatus.FILE_CHANGED
+        # If there is nothing to be checked, assume it shall always run
+        else:
+            return RunInfoStatus.NOTHING_TO_CHECK
         return RunInfoStatus.MATCH
 
     def execute(self, runnable: Runnable) -> int:
