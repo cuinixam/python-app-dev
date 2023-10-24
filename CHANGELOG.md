@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.4.0 (2023-10-24)
+
+### Feature
+
+* Executor support for always run runnables ([`8015b85`](https://github.com/cuinixam/python-app-dev/commit/8015b858d457691978c6d161a990ae492fa5015c))
+
 ## v1.3.0 (2023-10-22)
 
 ### Feature
