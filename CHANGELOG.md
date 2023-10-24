@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.4.1 (2023-10-24)
+
+### Fix
+
+* Exception is thrown if file is not found ([`4b44d10`](https://github.com/cuinixam/python-app-dev/commit/4b44d10d7f2d5eae9fa37768d626c216f7ac7848))
+
 ## v1.4.0 (2023-10-24)
 
 ### Feature
