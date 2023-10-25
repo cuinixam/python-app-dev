@@ -226,7 +226,7 @@ def test_do_install_missing(scoop_dir: Path) -> None:
 
     scoop_wrapper = create_scoop_wrapper(scoop_dir / "scoop.exe")
 
-    with patch("subprocess.run", Mock()):
+    with patch("py_app_dev.core.subprocess.SubprocessExecutor.execute", Mock()):
         assert (
             len(scoop_wrapper.do_install_missing(scoop_install_config, [app1, app2]))
             == 0
