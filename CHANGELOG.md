@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.5.0 (2023-10-25)
+
+### Feature
+
+* Subprocess print stdout in realtime ([`78dc4ac`](https://github.com/cuinixam/python-app-dev/commit/78dc4ac02f9a1ff85cd45c697f2538757994683a))
+
 ## v1.4.1 (2023-10-24)
 
 ### Fix
