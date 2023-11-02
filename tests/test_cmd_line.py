@@ -114,3 +114,26 @@ def test_register_arguments_with_action_store_true():
         "opt_arg": None,
         "opt_arg_bool": True,
     }
+
+
+@dataclass
+class ClassWithOptionalPath:
+    model_file: Path = field(metadata={"help": "Model file."})
+    config_file: Optional[Path] = field(default=None, metadata={"help": "Config file."})
+
+
+def test_register_optional_path_arguments():
+    parser = ArgumentParser()
+    register_arguments_for_config_dataclass(parser, ClassWithOptionalPath)
+    args = parser.parse_args(
+        [
+            "--model-file",
+            "my/path",
+            "--config-file",
+            "some/config/path",
+        ]
+    )
+    assert vars(args) == {
+        "model_file": Path("my/path"),
+        "config_file": Path("some/config/path"),
+    }

@@ -95,6 +95,13 @@ def is_type_optional(some_type: Any) -> bool:
     )
 
 
+def get_actual_type(some_type: Any) -> Any:
+    if is_type_optional(some_type):
+        # Return the first type that isn't NoneType
+        return next(t for t in some_type.__args__ if not isinstance(t, type(None)))
+    return some_type
+
+
 def register_arguments_for_config_dataclass(
     parser: ArgumentParser, config_dataclass: Type  # type: ignore
 ) -> None:
@@ -129,7 +136,7 @@ def register_arguments_for_config_dataclass(
             parser.add_argument(
                 f"--{parameter_name}",
                 required=parameter_required,
-                type=parameter_type,
+                type=get_actual_type(parameter_type),
                 default=parameter_default,
                 help=parameter_help,
             )
