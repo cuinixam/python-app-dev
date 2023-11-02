@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.5.1 (2023-11-02)
+
+### Fix
+
+* Optional arguments type is wrong ([`9687f6a`](https://github.com/cuinixam/python-app-dev/commit/9687f6a634046d16aee3d4f3b738b3ff31ef1c6a))
+
 ## v1.5.0 (2023-10-25)
 
 ### Feature
