@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.6.0 (2023-11-25)
+
+### Feature
+
+* Check if scoop is installed in user home ([`007cf6a`](https://github.com/cuinixam/python-app-dev/commit/007cf6a6d349483a6cbeb170168b840a4fdc5acb))
+
 ## v1.5.1 (2023-11-02)
 
 ### Fix
