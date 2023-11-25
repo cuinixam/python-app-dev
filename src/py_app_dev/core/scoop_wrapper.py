@@ -87,9 +87,12 @@ class ScoopWrapper:
     def _find_scoop_executable(self) -> Path:
         scoop_path = which("scoop")
         if not scoop_path:
-            raise UserNotificationException(
-                "Scoop not found in PATH. Please run the build script again."
-            )
+            scoop_path = Path().home().joinpath("scoop", "shims", "scoop.ps1")
+            if not scoop_path.exists():
+                raise UserNotificationException(
+                    "Scoop not found in PATH or user home directory."
+                    " Please install Scoop and run the build script again."
+                )
         return scoop_path
 
     def _find_scoop_root_dir(self, scoop_executable_path: Path) -> Path:

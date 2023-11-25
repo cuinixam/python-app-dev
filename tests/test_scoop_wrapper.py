@@ -20,7 +20,13 @@ def create_scoop_wrapper(scoop_executable: Optional[Path]) -> ScoopWrapper:
         "py_app_dev.core.scoop_wrapper.which",
         return_value=scoop_executable,
     ):
-        scoop_wrapper = ScoopWrapper()
+        with patch(
+            "pathlib.Path.home",
+            return_value=scoop_executable.parent
+            if scoop_executable
+            else Path("some/path"),
+        ):
+            scoop_wrapper = ScoopWrapper()
     return scoop_wrapper
 
 
