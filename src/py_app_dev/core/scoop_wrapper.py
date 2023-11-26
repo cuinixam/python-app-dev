@@ -59,6 +59,8 @@ class InstalledApp:
     path: Path
     #: List of bin directories relative to the app path
     bin_dirs: List[Path]
+    #: List of directories relative to the app path
+    env_add_path: List[Path]
 
 
 @dataclass
@@ -135,12 +137,16 @@ class ScoopWrapper:
             manifest_data: Dict[str, Any] = json.load(f)
             tool_version: str = manifest_data.get("version", None)
             bin_dirs: List[Path] = self.parse_bin_dirs(manifest_data.get("bin", []))
+            env_add_path: List[Path] = [
+                Path(p) for p in manifest_data.get("env_add_path", [])
+            ]
             return InstalledScoopApp(
                 name=tool_name,
                 version=tool_version,
                 path=app_directory,
                 manifest_file=manifest_file,
                 bin_dirs=bin_dirs,
+                env_add_path=env_add_path,
             )
 
     def get_installed_apps(self) -> List[InstalledScoopApp]:

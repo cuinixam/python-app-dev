@@ -68,6 +68,19 @@ def scoop_dir(tmp_path: Path) -> Path:
     manifest.parent.mkdir(parents=True)
     manifest.write_text(json.dumps({"version": "3.1.1", "bin": "program5.exe"}))
 
+    # new app with env_add_path
+    manifest = apps_dir / "app3" / "1.0" / "manifest.json"
+    manifest.parent.mkdir(parents=True)
+    manifest.write_text(
+        json.dumps(
+            {
+                "version": "1.0",
+                "bin": "bin/program6.exe",
+                "env_add_path": ["bin", "bin2"],
+            }
+        )
+    )
+
     # some dummy manifest file somewhere in the app2 directory. This should not be picked up
     manifest = apps_dir / "app2" / "3.1.1" / "some_dir" / "manifest.json"
     manifest.parent.mkdir(parents=True)
@@ -83,7 +96,7 @@ def test_get_installed_tools(scoop_dir: Path) -> None:
     installed_tools = scoop_wrapper.get_installed_apps()
 
     # Additional assertions based on your requirements or expectations
-    assert len(installed_tools) == 3
+    assert len(installed_tools) == 4
     apps_dir = scoop_dir.joinpath("apps")
 
     # Check the details of individual tools
@@ -95,6 +108,7 @@ def test_get_installed_tools(scoop_dir: Path) -> None:
     assert tool1.path == apps_dir.joinpath("app1/1.0")
     assert tool1.manifest_file == tool1.path / "manifest.json"
     assert tool1.bin_dirs == [Path("bin")]
+    assert tool1.env_add_path == []
 
     tool2 = next(
         filter(lambda t: t.name == "app1" and t.version == "2.0", installed_tools)
@@ -104,6 +118,7 @@ def test_get_installed_tools(scoop_dir: Path) -> None:
     assert tool2.path == apps_dir.joinpath("app1/2.0")
     assert tool2.manifest_file == tool2.path / "manifest.json"
     assert tool2.bin_dirs == [Path("app")]
+    assert tool2.env_add_path == []
 
     tool3 = next(filter(lambda t: t.name == "app2", installed_tools))
     assert tool3.name == "app2"
@@ -111,6 +126,15 @@ def test_get_installed_tools(scoop_dir: Path) -> None:
     assert tool3.path == apps_dir.joinpath("app2/3.1.1")
     assert tool3.manifest_file == tool3.path / "manifest.json"
     assert tool3.bin_dirs == []
+    assert tool3.env_add_path == []
+
+    tool4 = next(filter(lambda t: t.name == "app3", installed_tools))
+    assert tool4.name == "app3"
+    assert tool4.version == "1.0"
+    assert tool4.path == apps_dir.joinpath("app3/1.0")
+    assert tool4.manifest_file == tool4.path / "manifest.json"
+    assert tool4.bin_dirs == [Path("bin")]
+    assert tool4.env_add_path == [Path("bin"), Path("bin2")]
 
 
 def test_install(scoop_dir: Path, tmp_path: Path) -> None:
@@ -176,12 +200,14 @@ def test_map_required_apps_to_installed_apps():
             "1.0",
             Path("/path/to/app1"),
             [],
+            [],
             Path("/path/to/app1/manifest.json"),
         ),
         InstalledScoopApp(
             "app2",
             "1.0",
             Path("/path/to/app2"),
+            [],
             [],
             Path("/path/to/app2/manifest.json"),
         ),
@@ -226,6 +252,7 @@ def test_do_install_missing(scoop_dir: Path) -> None:
             path=Path(f"/path/to/{app_name}"),
             manifest_file=Path(f"/path/to/{app_name}/manifest.json"),
             bin_dirs=[],
+            env_add_path=[],
         )
         for app_name in ["app1", "app2", "app3"]
     )
