@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.7.0 (2023-11-26)
+
+### Feature
+
+* Suprocess executor can override the env ([`c51a413`](https://github.com/cuinixam/python-app-dev/commit/c51a4138f415ee7d4342dea4c4292556c32ee188))
+
 ## v1.6.2 (2023-11-26)
 
 ### Fix
