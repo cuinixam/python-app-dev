@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.2 (2023-11-26)
+
+### Fix
+
+* Application path is not in required paths ([`d1927ed`](https://github.com/cuinixam/python-app-dev/commit/d1927edc78ec0932c6310fa14cbc0434d9feecdb))
+
 ## v1.8.1 (2023-11-26)
 
 ### Fix
