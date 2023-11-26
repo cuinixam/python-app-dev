@@ -1,7 +1,7 @@
 import shutil
 import subprocess  # nosec
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from .exceptions import UserNotificationException
 from .logging import logger
@@ -19,11 +19,13 @@ class SubprocessExecutor:
         command: List[str | Path],
         cwd: Optional[Path] = None,
         capture_output: bool = True,
+        env: Optional[Dict[str, str]] = None,
     ):
         self.logger = logger.bind()
         self.command = " ".join([str(cmd) for cmd in command])
         self.current_working_directory = cwd
         self.capture_output = capture_output
+        self.env = env
 
     def execute(self) -> None:
         try:
@@ -37,6 +39,7 @@ class SubprocessExecutor:
                     subprocess.STDOUT if self.capture_output else subprocess.DEVNULL
                 ),
                 text=True,
+                env=self.env,
             ) as process:  # nosec
                 if self.capture_output and process.stdout is not None:
                     for line in iter(process.stdout.readline, ""):
