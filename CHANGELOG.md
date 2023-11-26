@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.6.2 (2023-11-26)
+
+### Fix
+
+* Wrong scoop executable is returned ([`3867df0`](https://github.com/cuinixam/python-app-dev/commit/3867df07643dcde3e1ca484091e70aa458a1630d))
+
 ## v1.6.1 (2023-11-26)
 
 ### Fix
