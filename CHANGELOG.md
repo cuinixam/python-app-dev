@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.0 (2023-11-26)
+
+### Feature
+
+* Read env paths for scoop tools ([`a253165`](https://github.com/cuinixam/python-app-dev/commit/a253165356672764d80288664f5ff57dbdbad12a))
+
 ## v1.7.0 (2023-11-26)
 
 ### Feature
