@@ -76,7 +76,7 @@ def scoop_dir(tmp_path: Path) -> Path:
             {
                 "version": "1.0",
                 "bin": "bin/program6.exe",
-                "env_add_path": ["bin", "bin2"],
+                "env_add_path": "bin",
             }
         )
     )
@@ -134,7 +134,8 @@ def test_get_installed_tools(scoop_dir: Path) -> None:
     assert tool4.path == apps_dir.joinpath("app3/1.0")
     assert tool4.manifest_file == tool4.path / "manifest.json"
     assert tool4.bin_dirs == [Path("bin")]
-    assert tool4.env_add_path == [Path("bin"), Path("bin2")]
+    assert tool4.env_add_path == [Path("bin")]
+    assert len(tool4.get_all_required_paths()) == 1
 
 
 def test_install(scoop_dir: Path, tmp_path: Path) -> None:

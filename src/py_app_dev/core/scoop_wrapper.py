@@ -62,6 +62,20 @@ class InstalledApp:
     #: List of directories relative to the app path
     env_add_path: List[Path]
 
+    def get_bin_paths(self) -> List[Path]:
+        """Return the list of bin paths."""
+        return [self.path.joinpath(bin_dir) for bin_dir in self.bin_dirs]
+
+    def get_env_add_path(self) -> List[Path]:
+        """Return the list of env_add_path paths."""
+        return [self.path.joinpath(env_add_path) for env_add_path in self.env_add_path]
+
+    def get_all_required_paths(self) -> List[Path]:
+        """Return the list of all required paths, maintaining order and removing duplicates."""
+        all_paths = self.get_bin_paths() + self.get_env_add_path()
+        unique_paths = list(dict.fromkeys(all_paths))
+        return unique_paths
+
 
 @dataclass
 class InstalledScoopApp(InstalledApp):
@@ -128,7 +142,16 @@ class ScoopWrapper:
                 for parent in [get_parent_dir(bin_entry) for bin_entry in bin_data]
                 if parent
             ]
-        return list(set(result))
+        # Remove duplicates and maintain order
+        return list(dict.fromkeys(result))
+
+    def parse_env_path_dirs(self, env_paths: Union[str, List[str]]) -> List[Path]:
+        """Parse the env_add_path directories from the manifest file."""
+
+        if isinstance(env_paths, str):
+            return [Path(env_paths)]
+        elif isinstance(env_paths, list):
+            return [Path(env_path) for env_path in env_paths]
 
     def parse_manifest_file(self, manifest_file: Path) -> InstalledScoopApp:
         app_directory: Path = manifest_file.parent
@@ -137,9 +160,9 @@ class ScoopWrapper:
             manifest_data: Dict[str, Any] = json.load(f)
             tool_version: str = manifest_data.get("version", None)
             bin_dirs: List[Path] = self.parse_bin_dirs(manifest_data.get("bin", []))
-            env_add_path: List[Path] = [
-                Path(p) for p in manifest_data.get("env_add_path", [])
-            ]
+            env_add_path: List[Path] = self.parse_env_path_dirs(
+                manifest_data.get("env_add_path", [])
+            )
             return InstalledScoopApp(
                 name=tool_name,
                 version=tool_version,
