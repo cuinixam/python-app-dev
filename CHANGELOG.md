@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.1 (2023-11-26)
+
+### Fix
+
+* Single env path is not parsed properly ([`6a4bb3e`](https://github.com/cuinixam/python-app-dev/commit/6a4bb3e948fc2730ccd3f2ff84023554cb63ca59))
+
 ## v1.8.0 (2023-11-26)
 
 ### Feature
