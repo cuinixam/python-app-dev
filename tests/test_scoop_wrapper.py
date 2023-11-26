@@ -135,7 +135,7 @@ def test_get_installed_tools(scoop_dir: Path) -> None:
     assert tool4.manifest_file == tool4.path / "manifest.json"
     assert tool4.bin_dirs == [Path("bin")]
     assert tool4.env_add_path == [Path("bin")]
-    assert len(tool4.get_all_required_paths()) == 1
+    assert len(tool4.get_all_required_paths()) == 2  # install path and bin
 
 
 def test_install(scoop_dir: Path, tmp_path: Path) -> None:

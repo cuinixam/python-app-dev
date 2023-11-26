@@ -72,7 +72,7 @@ class InstalledApp:
 
     def get_all_required_paths(self) -> List[Path]:
         """Return the list of all required paths, maintaining order and removing duplicates."""
-        all_paths = self.get_bin_paths() + self.get_env_add_path()
+        all_paths = [self.path] + self.get_bin_paths() + self.get_env_add_path()
         unique_paths = list(dict.fromkeys(all_paths))
         return unique_paths
 
