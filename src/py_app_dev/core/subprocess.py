@@ -20,12 +20,14 @@ class SubprocessExecutor:
         cwd: Optional[Path] = None,
         capture_output: bool = True,
         env: Optional[Dict[str, str]] = None,
+        shell: bool = False,
     ):
         self.logger = logger.bind()
         self.command = " ".join([str(cmd) for cmd in command])
         self.current_working_directory = cwd
         self.capture_output = capture_output
         self.env = env
+        self.shell = shell
 
     def execute(self) -> None:
         try:
@@ -40,6 +42,7 @@ class SubprocessExecutor:
                 ),
                 text=True,
                 env=self.env,
+                shell=self.shell,
             ) as process:  # nosec
                 if self.capture_output and process.stdout is not None:
                     for line in iter(process.stdout.readline, ""):
