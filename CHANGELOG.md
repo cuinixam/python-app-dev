@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.9.0 (2023-12-09)
+
+### Feature
+
+* Use shell for subprocess executor ([`baced78`](https://github.com/cuinixam/python-app-dev/commit/baced787c081f746fd21abf007d76a8cfdca0481))
+
 ## v1.8.2 (2023-11-26)
 
 ### Fix
