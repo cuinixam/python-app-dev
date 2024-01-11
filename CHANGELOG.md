@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.10.0 (2024-01-11)
+
+### Feature
+
+* Add log to file context manager ([`a333716`](https://github.com/cuinixam/python-app-dev/commit/a3337164ce358de00f7dec9c5f67caac5118b814))
+
 ## v1.9.0 (2023-12-09)
 
 ### Feature
