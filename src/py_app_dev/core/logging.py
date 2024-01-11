@@ -60,10 +60,13 @@ def setup_logger(log_file: Optional[Path] = None, clear: bool = True) -> None:
 
 @contextmanager
 def log_to_file(
-    log_file: Path, my_logger: Optional[Logger] = None
+    log_file: Path, my_logger: Optional[Logger] = None, clear: bool = True
 ) -> Generator[Logger, None, None]:
     used_logger = my_logger if my_logger else logger
     file_handler_id = used_logger.add(log_file)
+    # Clear log file
+    if log_file.exists() and clear:
+        log_file.write_text("")
     try:
         yield used_logger
     finally:
