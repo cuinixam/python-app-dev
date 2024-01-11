@@ -1,12 +1,14 @@
 """ Logging utilities. """
 
-from functools import wraps
 import sys
 import time
+from contextlib import contextmanager
+from functools import wraps
 from pathlib import Path
-from typing import Any, Callable, Optional, TypeVar
+from typing import Any, Callable, Generator, Optional, TypeVar
 
 from loguru import logger as _logger
+from loguru._logger import Logger
 
 from .docs_utils import fulfills
 
@@ -54,3 +56,15 @@ def setup_logger(log_file: Optional[Path] = None, clear: bool = True) -> None:
         # Clear log file
         if log_file.exists() and clear:
             log_file.write_text("")
+
+
+@contextmanager
+def log_to_file(
+    log_file: Path, my_logger: Optional[Logger] = None
+) -> Generator[Logger, None, None]:
+    used_logger = my_logger if my_logger else logger
+    file_handler_id = used_logger.add(log_file)
+    try:
+        yield used_logger
+    finally:
+        used_logger.remove(file_handler_id)

@@ -1,6 +1,7 @@
 from pathlib import Path
+
 from py_app_dev.core.docs_utils import validates
-from py_app_dev.core.logging import logger, setup_logger, time_it
+from py_app_dev.core.logging import log_to_file, logger, setup_logger, time_it
 
 
 @validates("REQ-LOGGING_FILE-0.0.1")
@@ -47,15 +48,22 @@ class MyClass:
 
     @time_it()
     def run(self):
-        logger_handler_id = self.logger.add(self.log_file)
-        self.logger.debug("I am in log file")
-        self.logger.remove(logger_handler_id)
-        self.logger.debug("Not in log file")
+        with log_to_file(self.log_file, self.logger):
+            self.logger.debug("I am in the log file")
+        self.logger.debug("Not in the log file")
 
 
-def test_logger_add_file(tmp_path):
+def test_log_with_file(tmp_path):
     log_file = tmp_path / "test.log"
     MyClass(log_file).run()
     log_text = log_file.read_text()
-    assert "I am in log file" in log_text
-    assert "Not in log file" not in log_text
+    assert "I am in the log file" in log_text
+    assert "Not in the log file" not in log_text
+
+
+def test_log_with_file_default_logger(tmp_path):
+    log_file = tmp_path / "test.log"
+    with log_to_file(log_file) as new_logger:
+        new_logger.debug("I am in the log file")
+    log_text = log_file.read_text()
+    assert "I am in the log file" in log_text
