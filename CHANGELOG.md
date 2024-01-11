@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.11.0 (2024-01-11)
+
+### Feature
+
+* Clear log file ([`76d1e08`](https://github.com/cuinixam/python-app-dev/commit/76d1e080d2879a71142adb1636cc1ea2031c0022))
+
 ## v1.10.0 (2024-01-11)
 
 ### Feature
