@@ -1,9 +1,10 @@
 """ Logging utilities. """
 
+from functools import wraps
 import sys
 import time
 from pathlib import Path
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, TypeVar
 
 from loguru import logger as _logger
 
@@ -15,15 +16,18 @@ logger = _logger
 logger.level("START", no=38, color="<yellow>")
 logger.level("STOP", no=39, color="<yellow>")
 
+_R = TypeVar("_R")
+_FuncType = Callable[..., _R]
+
 
 @fulfills("REQ-LOGGING_TIME_IT-0.0.1")
-def time_it(message: Optional[str] = None) -> Callable[..., Any]:
+def time_it(message: Optional[str] = None) -> Callable[[_FuncType[_R]], _FuncType[_R]]:
     """Decorator to time a function."""
 
-    def _time_it(func: Callable[..., Any]) -> Callable[..., Any]:
-        text = message or f"{func.__module__}.{func.__qualname__}"
-
-        def time_it(*args: Any, **kwargs: Any) -> Any:
+    def _time_it(func: _FuncType[_R]) -> _FuncType[_R]:
+        @wraps(func)
+        def time_it(*args: Any, **kwargs: Any) -> _R:
+            text = message or f"{func.__module__}.{func.__qualname__}"
             start_time = time.time()
             logger.log("START", f"Starting {text}")
             result = func(*args, **kwargs)
