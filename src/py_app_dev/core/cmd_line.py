@@ -1,7 +1,7 @@
 import dataclasses
 from abc import ABC, abstractmethod
 from argparse import ArgumentError, ArgumentParser, Namespace
-from typing import Any, Dict, List, Type, Union
+from typing import Any, Dict, List, Type, Union, get_args
 
 from .docs_utils import fulfills
 from .logging import logger
@@ -95,10 +95,19 @@ def is_type_optional(some_type: Any) -> bool:
     )
 
 
+def is_type_list(some_type: Any) -> bool:
+    return hasattr(some_type, "__origin__") and some_type.__origin__ is list
+
+
 def get_actual_type(some_type: Any) -> Any:
+    # Check if the type is optional and handle accordingly
     if is_type_optional(some_type):
         # Return the first type that isn't NoneType
         return next(t for t in some_type.__args__ if not isinstance(t, type(None)))
+    # Check if the type is a list
+    elif is_type_list(some_type):
+        # Return the element type of the list
+        return get_args(some_type)[0]
     return some_type
 
 
@@ -114,6 +123,9 @@ def register_arguments_for_config_dataclass(
         parameter_default = (
             field.default if not field.default == dataclasses.MISSING else None
         )
+        # Handle fields with optional list arguments
+        if field.default_factory is list:
+            parameter_default = []
         parameter_help = field.metadata.get(
             "help", f"Value for {field_name}. Default: {parameter_default}"
         )
@@ -123,7 +135,9 @@ def register_arguments_for_config_dataclass(
         parameter_required = not (
             is_type_optional(parameter_type) or parameter_default is not None
         )
+        parameter_nargs = "+" if is_type_list(parameter_type) else None
 
+        # Currently this was tested for arguments with action=store_true
         if parameter_action:
             parser.add_argument(
                 f"--{parameter_name}",
@@ -138,5 +152,6 @@ def register_arguments_for_config_dataclass(
                 required=parameter_required,
                 type=get_actual_type(parameter_type),
                 default=parameter_default,
+                nargs=parameter_nargs,  # type: ignore
                 help=parameter_help,
             )

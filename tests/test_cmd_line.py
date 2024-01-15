@@ -137,3 +137,46 @@ def test_register_optional_path_arguments():
         "model_file": Path("my/path"),
         "config_file": Path("some/config/path"),
     }
+
+
+@dataclass
+class ClassWithListArgument:
+    my_paths: List[Path] = field(metadata={"help": "List of paths"})
+    # This is an optional list
+    my_strings: List[str] = field(
+        default_factory=list, metadata={"help": "List of strings"}
+    )
+
+
+def test_register_list_argument():
+    parser = ArgumentParser()
+    register_arguments_for_config_dataclass(parser, ClassWithListArgument)
+    args = parser.parse_args(
+        [
+            "--my-paths",
+            "my/path",
+            "some/other/path",
+        ]
+    )
+    assert vars(args) == {
+        "my_paths": [Path("my/path"), Path("some/other/path")],
+        "my_strings": [],
+    }
+
+
+def test_register_list_argument_set_optional_list():
+    parser = ArgumentParser()
+    register_arguments_for_config_dataclass(parser, ClassWithListArgument)
+    args = parser.parse_args(
+        [
+            "--my-paths",
+            "my/path",
+            "--my-strings",
+            "one",
+            "two",
+        ]
+    )
+    assert vars(args) == {
+        "my_paths": [Path("my/path")],
+        "my_strings": ["one", "two"],
+    }
