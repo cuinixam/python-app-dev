@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.12.0 (2024-01-15)
+
+### Feature
+
+* Support lists for registering arguments ([`64e477f`](https://github.com/cuinixam/python-app-dev/commit/64e477f27ff65e25fc46fa0647a1c2096892af14))
+
 ## v1.11.0 (2024-01-11)
 
 ### Feature
