@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.13.0 (2024-01-18)
+
+### Feature
+
+* Support deserialize method ([`17e063d`](https://github.com/cuinixam/python-app-dev/commit/17e063ddb39a94eb1d248403239d299511563d88))
+
 ## v1.12.0 (2024-01-15)
 
 ### Feature
