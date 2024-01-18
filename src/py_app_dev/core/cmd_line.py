@@ -137,6 +137,12 @@ def register_arguments_for_config_dataclass(
         )
         parameter_nargs = "+" if is_type_list(parameter_type) else None
 
+        # In case there is a custom deserialize method, override the type
+        # to force the conversion using the deserialize method
+        deserialize_method = field.metadata.get("deserialize", None)
+        if deserialize_method:
+            parameter_type = deserialize_method
+
         # Currently this was tested for arguments with action=store_true
         if parameter_action:
             parser.add_argument(

@@ -1,5 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass, field
+from enum import Enum, auto
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -180,3 +181,36 @@ def test_register_list_argument_set_optional_list():
         "my_paths": [Path("my/path")],
         "my_strings": ["one", "two"],
     }
+
+
+class MyEnum(Enum):
+    ONE = auto()
+
+
+@dataclass
+class ClassWithCustomDeserialize:
+    my_hex_value: int = field(
+        metadata={
+            "help": "My hexadecimal value.",
+            "deserialize": lambda in_str: int(in_str, 16),
+        }
+    )
+    my_int: int
+    my_enum: Optional[MyEnum] = field(
+        metadata={
+            "deserialize": lambda in_str: getattr(MyEnum, str(in_str).upper())
+            if in_str
+            else None
+        }
+    )
+
+
+def test_register_arguments_with_custom_deserialize():
+    parser = ArgumentParser()
+    register_arguments_for_config_dataclass(parser, ClassWithCustomDeserialize)
+    args = parser.parse_args(["--my-hex-value", "0x01", "--my-int", "13"])
+    assert vars(args) == {"my_hex_value": 1, "my_int": 13, "my_enum": None}
+    args = parser.parse_args(
+        ["--my-hex-value", "0x01", "--my-int", "13", "--my-enum", "one"]
+    )
+    assert vars(args) == {"my_hex_value": 1, "my_int": 13, "my_enum": MyEnum.ONE}
