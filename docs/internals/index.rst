@@ -1,5 +1,6 @@
-Design
-######
+📚 Internals
+************
+
 
 .. toctree::
     :caption: Modules

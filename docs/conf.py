@@ -5,7 +5,6 @@
 import os
 import sys
 from pathlib import Path
-from typing import Any
 
 import mlx.traceability
 
@@ -69,16 +68,15 @@ source_suffix = [
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
+# Resize rtd theme
+extensions.append("sphinx_rtd_size")
+sphinx_rtd_size_width = "90%"
+
+# copy button for code block
+extensions.append("sphinx_copybutton")
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
-
-
-def setup(app: Any) -> None:
-    # New directive types: treated exactly as ``item`` directive, but
-    # using a different name. Item template can be customized for
-    # these types
-    app.add_css_file("css/extra.css")
