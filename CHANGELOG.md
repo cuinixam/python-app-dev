@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v2.0.0 (2024-02-17)
+
+### Feature
+
+* Make the pipeline loader generic ([`b516274`](https://github.com/cuinixam/python-app-dev/commit/b5162749433af13f14057aa278b5cbcc2df36142))
+
+### Breaking
+
+* make the pipeline loader generic ([`b516274`](https://github.com/cuinixam/python-app-dev/commit/b5162749433af13f14057aa278b5cbcc2df36142))
+
 ## v1.13.0 (2024-01-18)
 
 ### Feature
