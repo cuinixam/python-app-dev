@@ -1,0 +1,16 @@
+{
+  "pipeline": {
+    "install": [
+      {
+        "step": "MyInstallStep",
+        "file": "steps.py"
+      }
+    ],
+    "run": [
+      {
+        "step": "MyRunStep",
+        "file": "steps.py"
+      }
+    ]
+  }
+}
