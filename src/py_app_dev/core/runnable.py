@@ -33,6 +33,7 @@ class RunInfoStatus(Enum):
     FILE_NOT_FOUND = (True, "File not found.")
     FILE_CHANGED = (True, "File has changed.")
     NOTHING_TO_CHECK = (True, "Nothing to be checked. Assume it shall always run.")
+    FORCED_RUN = (True, "Forced run. Ignore previous execution info.")
 
     def __init__(self, should_run: bool, message: str) -> None:
         self.should_run = should_run
@@ -48,8 +49,9 @@ class Executor:
 
     RUN_INFO_FILE_EXTENSION = ".deps.json"
 
-    def __init__(self, cache_dir: Path) -> None:
+    def __init__(self, cache_dir: Path, force_run: bool = False) -> None:
         self.cache_dir = cache_dir
+        self.force_run = force_run
 
     @staticmethod
     def get_file_hash(path: Path) -> Optional[str]:
@@ -93,6 +95,8 @@ class Executor:
         return self.cache_dir / f"{runnable.get_name()}{self.RUN_INFO_FILE_EXTENSION}"
 
     def previous_run_info_matches(self, runnable: Runnable) -> RunInfoStatus:
+        if self.force_run:
+            return RunInfoStatus.FORCED_RUN
         run_info_path = self.get_runnable_run_info_file(runnable)
         if not run_info_path.exists():
             return RunInfoStatus.NO_INFO

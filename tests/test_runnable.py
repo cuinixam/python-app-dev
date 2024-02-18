@@ -49,6 +49,8 @@ def test_previous_info_matches(executor, tmp_path):
     runnable = MyRunnable(name="test2", inputs=[input_path], outputs=[output_path])
     executor.execute(runnable)
     assert executor.previous_run_info_matches(runnable) == RunInfoStatus.MATCH
+    new_executor = Executor(cache_dir=executor.cache_dir, force_run=True)
+    assert new_executor.previous_run_info_matches(runnable) == RunInfoStatus.FORCED_RUN
 
 
 def test_file_changed(executor, tmp_path):
