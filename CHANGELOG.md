@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.0 (2024-02-18)
+
+### Feature
+
+* Add option to force runnable execution ([`06fde72`](https://github.com/cuinixam/python-app-dev/commit/06fde72d02d4f040bd1c756e9e6f33484a082c2c))
+
 ## v2.0.0 (2024-02-17)
 
 ### Feature
