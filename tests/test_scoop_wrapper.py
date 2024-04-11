@@ -46,16 +46,19 @@ def scoop_dir(tmp_path: Path) -> Path:
     # Create a temporary directory structure for testing
     apps_dir = scoop_dir / "apps"
     # Create fake apps and manifest files
-    manifest = apps_dir / "app1" / "1.0" / "manifest.json"
+    manifest = apps_dir / "app1" / "current" / "manifest.json"
     manifest.parent.mkdir(parents=True)
-    manifest.write_text(
-        json.dumps(
+    manifest_app1_ver1 = json.dumps(
             {
                 "version": "1.0",
                 "bin": ["bin/program1.exe", "bin/program2.exe", "program3.exe"],
             }
         )
-    )
+    
+    manifest.write_text(manifest_app1_ver1)
+    manifest = apps_dir / "app1" / "1.0" / "manifest.json"
+    manifest.parent.mkdir(parents=True)
+    manifest.write_text(manifest_app1_ver1)
     manifest = apps_dir / "app1" / "2.0" / "manifest.json"
     manifest.parent.mkdir(parents=True)
     manifest.write_text(
