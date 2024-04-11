@@ -175,7 +175,11 @@ class ScoopWrapper:
     def get_installed_apps(self) -> List[InstalledScoopApp]:
         installed_tools: List[InstalledScoopApp] = []
         self.logger.info(f"Looking for installed apps in {self.apps_directory}")
-        manifest_files = list(self.apps_directory.glob("*/*/manifest.json"))
+        manifest_files = [
+            f
+            for f in self.apps_directory.glob("*/*/manifest.json")
+            if "current" not in str(f.parent)
+        ]
 
         with ThreadPoolExecutor() as executor:
             future_to_file = {
