@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v2.1.1 (2024-04-12)
+
+### Fix
+
+* Scoop wrapper finds apps twice ([`4b704ad`](https://github.com/cuinixam/python-app-dev/commit/4b704ad615cfb91cbf51748be46b9a15a7e85585))
+
 ## v2.1.0 (2024-02-18)
 
 ### Feature
