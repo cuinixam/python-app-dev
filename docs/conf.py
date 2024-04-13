@@ -3,7 +3,6 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 import datetime
-import os
 import sys
 from pathlib import Path
 
@@ -64,10 +63,10 @@ extensions.append("mlx.traceability")
 
 # Make relationship like 'validated_by' be shown for each requirement
 traceability_render_relationship_per_item = True
+traceability_collapse_links = True
 
 # The suffix of source filenames.
 source_suffix = [
-    ".rst",
     ".md",
 ]
 
@@ -94,6 +93,6 @@ html_theme_options = {
 }
 html_last_updated_fmt = ""
 html_static_path = [
-    os.path.join(os.path.dirname(mlx.traceability.__file__), "assets"),
+    Path(mlx.traceability.__file__).parent.joinpath("assets").as_posix(),
     "_static",
 ]

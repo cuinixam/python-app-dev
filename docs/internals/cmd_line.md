@@ -2,51 +2,37 @@
 
 ## Requirements
 
-```{eval-rst}
-.. item:: REQ-CMDLINE_REGISTER_COMMANDS-0.0.1 Register Commands
-   :status: Approved
+```{item} REQ-CMDLINE_REGISTER_COMMANDS-0.0.1 Register Commands
 
    The command-line interface shall support the registration of different commands.
 ```
 
-```{eval-rst}
-.. item:: REQ-CMDLINE_COMMAND_ARGS-0.0.1 Command Arguments
-   :status: Approved
+```{item} REQ-CMDLINE_COMMAND_ARGS-0.0.1 Command Arguments
 
    Each command shall support the registration of different arguments.
 ```
 
-```{eval-rst}
-.. item:: REQ-CMDLINE_COMMAND_EXEC-0.0.1 Command Execution
-   :status: Approved
+```{item} REQ-CMDLINE_COMMAND_EXEC-0.0.1 Command Execution
 
    On execution, the command-line interface shall determine which registered command has been called and execute it with the provided arguments.
 ```
 
-```{eval-rst}
-.. item:: REQ-CMDLINE_HELP-0.0.1 Help Message
-   :status: Approved
+```{item} REQ-CMDLINE_HELP-0.0.1 Help Message
 
    When no command is provided, the command-line interface shall print help messages to assist the user.
 ```
 
-```{eval-rst}
-.. item:: REQ-CMDLINE_UNKNOWN_COMMAND-0.0.1 Command Error Handling
-   :status: Approved
+```{item} REQ-CMDLINE_UNKNOWN_COMMAND-0.0.1 Command Error Handling
 
    If an unrecognized or unregistered command is provided, the command-line interface shall log an error message.
 ```
 
-```{eval-rst}
-.. item:: REQ-CMDLINE_DUPLICATION-0.0.1 Command Duplication
-   :status: Approved
+```{item} REQ-CMDLINE_DUPLICATION-0.0.1 Command Duplication
 
    The command-line interface shall not allow the registration of two commands with the same name.
 ```
 
-```{eval-rst}
-.. item:: REQ-CMDLINE_USER_CUSTOM-0.0.1 Load user defined commands
-   :status: Approved
+```{item} REQ-CMDLINE_USER_CUSTOM-0.0.1 Load user defined commands
 
    The command-line interface shall support the loading of user defined commands.
    The user defined commands shall be loaded from a directory specified by the user.

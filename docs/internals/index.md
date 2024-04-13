@@ -4,7 +4,9 @@
 :caption: Modules
 :maxdepth: 2
 
-logging/index
-cmd_line/index
+cmd_line
+logging
+runnable
+scoop_wrapper
 mvp/index
 ```
