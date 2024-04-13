@@ -18,13 +18,12 @@ class Command(ABC):
         """Run the command with the provided arguments."""
 
     def register_parser(self, parser_adder) -> None:  # type: ignore
-        """Register the command parser.
+        """
+        Register the command parser.
 
         :param parser_adder: The return value of ``ArgumentParser.add_subparsers()``
         """
-        self.parser = parser_adder.add_parser(
-            self.name, help=self.description, exit_on_error=False
-        )
+        self.parser = parser_adder.add_parser(self.name, help=self.description, exit_on_error=False)
         self._register_arguments(self.parser)
 
     @abstractmethod
@@ -88,11 +87,7 @@ class CommandLineHandlerBuilder:
 
 
 def is_type_optional(some_type: Any) -> bool:
-    return (
-        hasattr(some_type, "__origin__")
-        and some_type.__origin__ is Union
-        and type(None) in some_type.__args__
-    )
+    return hasattr(some_type, "__origin__") and some_type.__origin__ is Union and type(None) in some_type.__args__
 
 
 def is_type_list(some_type: Any) -> bool:
@@ -112,29 +107,27 @@ def get_actual_type(some_type: Any) -> Any:
 
 
 def register_arguments_for_config_dataclass(
-    parser: ArgumentParser, config_dataclass: Type  # type: ignore
+    parser: ArgumentParser,
+    config_dataclass: Type,  # type: ignore
 ) -> None:
-    """Helper function to register arguments for a dataclass.
-    This avoid having to manually register arguments for each field of the dataclass."""
+    """
+    Helper function to register arguments for a dataclass.
+
+    This avoid having to manually register arguments for each field of the dataclass.
+    """
     if not dataclasses.is_dataclass(config_dataclass):
         raise TypeError(f"{config_dataclass.__name__} is not a dataclass.")
 
     for field_name, field in config_dataclass.__dataclass_fields__.items():
-        parameter_default = (
-            field.default if not field.default == dataclasses.MISSING else None
-        )
+        parameter_default = field.default if not field.default == dataclasses.MISSING else None
         # Handle fields with optional list arguments
         if field.default_factory is list:
             parameter_default = []
-        parameter_help = field.metadata.get(
-            "help", f"Value for {field_name}. Default: {parameter_default}"
-        )
+        parameter_help = field.metadata.get("help", f"Value for {field_name}. Default: {parameter_default}")
         parameter_name = field_name.replace("_", "-")
         parameter_action = field.metadata.get("action", None)
         parameter_type = field.type
-        parameter_required = not (
-            is_type_optional(parameter_type) or parameter_default is not None
-        )
+        parameter_required = not (is_type_optional(parameter_type) or parameter_default is not None)
         parameter_nargs = "+" if is_type_list(parameter_type) else None
 
         # In case there is a custom deserialize method, override the type
@@ -158,6 +151,6 @@ def register_arguments_for_config_dataclass(
                 required=parameter_required,
                 type=get_actual_type(parameter_type),
                 default=parameter_default,
-                nargs=parameter_nargs,  # type: ignore
+                nargs=parameter_nargs,
                 help=parameter_help,
             )

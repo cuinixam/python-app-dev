@@ -37,12 +37,10 @@ class SubprocessExecutor:
                 self.command.split(),
                 cwd=cwd_path,
                 stdout=(subprocess.PIPE if self.capture_output else subprocess.DEVNULL),
-                stderr=(
-                    subprocess.STDOUT if self.capture_output else subprocess.DEVNULL
-                ),
+                stderr=(subprocess.STDOUT if self.capture_output else subprocess.DEVNULL),
                 text=True,
                 env=self.env,
-                shell=self.shell,
+                shell=self.shell,  # noqa: S603
             ) as process:  # nosec
                 if self.capture_output and process.stdout is not None:
                     for line in iter(process.stdout.readline, ""):
@@ -53,10 +51,6 @@ class SubprocessExecutor:
             if process.returncode != 0:
                 raise subprocess.CalledProcessError(process.returncode, self.command)
         except subprocess.CalledProcessError as e:
-            raise UserNotificationException(
-                f"Command '{self.command}' failed with return code {e.returncode}"
-            )
+            raise UserNotificationException(f"Command '{self.command}' failed with return code {e.returncode}") from None
         except FileNotFoundError as e:
-            raise UserNotificationException(
-                f"Command '{self.command}' failed with error {e}"
-            )
+            raise UserNotificationException(f"Command '{self.command}' failed with error {e}") from None

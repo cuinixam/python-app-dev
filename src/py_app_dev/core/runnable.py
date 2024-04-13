@@ -12,19 +12,19 @@ from .logging import logger
 class Runnable(ABC):
     @abstractmethod
     def run(self) -> int:
-        """Run stage"""
+        """Run and return exit code."""
 
     @abstractmethod
     def get_name(self) -> str:
-        """Get stage name"""
+        """Get runnable name."""
 
     @abstractmethod
     def get_inputs(self) -> List[Path]:
-        """Get stage dependencies"""
+        """Get runnable dependencies."""
 
     @abstractmethod
     def get_outputs(self) -> List[Path]:
-        """Get stage outputs"""
+        """Get runnable outputs."""
 
 
 class RunInfoStatus(Enum):
@@ -41,11 +41,12 @@ class RunInfoStatus(Enum):
 
 
 class Executor:
-    """Accepts Runnable objects and executes them.
-    It create a file with the same name as the runnable's name
-    and stores the inputs and outputs with their hashes.
-    If the file exists, it checks the hashes of the inputs and outputs
-    and if they match, it skips the execution."""
+    """
+    Accepts Runnable objects and executes them.
+
+    It create a file with the same name as the runnable's name and stores the inputs and outputs with their hashes.
+    If the file exists, it checks the hashes of the inputs and outputs and if they match, it skips the execution.
+    """
 
     RUN_INFO_FILE_EXTENSION = ".deps.json"
 
@@ -75,14 +76,8 @@ class Executor:
                 return file_hash
 
         file_info = {
-            "inputs": {
-                str(path): file_hash_to_str(self.get_file_hash(path))
-                for path in runnable.get_inputs()
-            },
-            "outputs": {
-                str(path): file_hash_to_str(self.get_file_hash(path))
-                for path in runnable.get_outputs()
-            },
+            "inputs": {str(path): file_hash_to_str(self.get_file_hash(path)) for path in runnable.get_inputs()},
+            "outputs": {str(path): file_hash_to_str(self.get_file_hash(path)) for path in runnable.get_outputs()},
         }
 
         run_info_path = self.get_runnable_run_info_file(runnable)
@@ -121,14 +116,10 @@ class Executor:
     def execute(self, runnable: Runnable) -> int:
         run_info_status = self.previous_run_info_matches(runnable)
         if run_info_status.should_run:
-            logger.info(
-                f"Runnable '{runnable.get_name()}' must run. {run_info_status.message}"
-            )
+            logger.info(f"Runnable '{runnable.get_name()}' must run. {run_info_status.message}")
             exit_code = runnable.run()
             self.store_run_info(runnable)
             return exit_code
-        logger.info(
-            f"Runnable '{runnable.get_name()}' execution skipped. {run_info_status.message}"
-        )
+        logger.info(f"Runnable '{runnable.get_name()}' execution skipped. {run_info_status.message}")
 
         return 0

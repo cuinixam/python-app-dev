@@ -1,5 +1,4 @@
 import importlib
-from abc import ABC
 from dataclasses import dataclass
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
@@ -43,7 +42,7 @@ PipelineConfig: TypeAlias = OrderedDict[str, List[PipelineStepConfig]]
 TPipelineStep = TypeVar("TPipelineStep")
 
 
-class PipelineStep(ABC):
+class PipelineStep:
     """Base class for pipelines with no custom user steps."""
 
     pass
@@ -66,9 +65,7 @@ class PipelineLoader(Generic[TPipelineStep]):
     def load_steps(self) -> List[PipelineStepReference[TPipelineStep]]:
         result = []
         for group_name, steps_config in self.pipeline_config.items():
-            result.extend(
-                self._load_steps(group_name, steps_config, self.project_root_dir)
-            )
+            result.extend(self._load_steps(group_name, steps_config, self.project_root_dir))
         return result
 
     @staticmethod
@@ -81,21 +78,12 @@ class PipelineLoader(Generic[TPipelineStep]):
         for step_config in steps_config:
             step_class_name = step_config.class_name or step_config.step
             if step_config.module:
-                step_class = PipelineLoader[TPipelineStep]._load_module_step(
-                    step_config.module, step_class_name
-                )
+                step_class = PipelineLoader[TPipelineStep]._load_module_step(step_config.module, step_class_name)
             elif step_config.file:
-                step_class = PipelineLoader[TPipelineStep]._load_user_step(
-                    project_root_dir.joinpath(step_config.file), step_class_name
-                )
+                step_class = PipelineLoader[TPipelineStep]._load_user_step(project_root_dir.joinpath(step_config.file), step_class_name)
             else:
-                raise UserNotificationException(
-                    f"Step '{step_class_name}' has no 'module' nor 'file' defined."
-                    " Please check your pipeline configuration."
-                )
-            result.append(
-                PipelineStepReference(group_name, step_class, step_config.config)
-            )
+                raise UserNotificationException(f"Step '{step_class_name}' has no 'module' nor 'file' defined." " Please check your pipeline configuration.")
+            result.append(PipelineStepReference(group_name, step_class, step_config.config))
         return result
 
     @staticmethod
@@ -109,30 +97,17 @@ class PipelineLoader(Generic[TPipelineStep]):
             try:
                 step_class = getattr(step_module, step_class_name)
             except AttributeError:
-                raise UserNotificationException(
-                    f"Could not load class '{step_class_name}' from file '{python_file}'."
-                    " Please check your pipeline configuration."
-                )
+                raise UserNotificationException(f"Could not load class '{step_class_name}' from file '{python_file}'." " Please check your pipeline configuration.") from None
             return step_class
-        raise UserNotificationException(
-            f"Could not load file '{python_file}'."
-            " Please check the file for any errors."
-        )
+        raise UserNotificationException(f"Could not load file '{python_file}'." " Please check the file for any errors.")
 
     @staticmethod
-    def _load_module_step(
-        module_name: str, step_class_name: str
-    ) -> Type[TPipelineStep]:
+    def _load_module_step(module_name: str, step_class_name: str) -> Type[TPipelineStep]:
         try:
             module = importlib.import_module(module_name)
             step_class = getattr(module, step_class_name)
         except ImportError:
-            raise UserNotificationException(
-                f"Could not load module '{module_name}'. Please check your pipeline configuration."
-            )
+            raise UserNotificationException(f"Could not load module '{module_name}'. Please check your pipeline configuration.") from None
         except AttributeError:
-            raise UserNotificationException(
-                f"Could not load class '{step_class_name}' from module '{module_name}'."
-                " Please check your pipeline configuration."
-            )
+            raise UserNotificationException(f"Could not load class '{step_class_name}' from module '{module_name}'." " Please check your pipeline configuration.") from None
         return step_class

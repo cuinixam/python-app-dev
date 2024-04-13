@@ -8,14 +8,12 @@ from py_app_dev.core.exceptions import UserNotificationException
 from py_app_dev.core.pipeline import PipelineLoader, PipelineStep, PipelineStepConfig
 
 
-def test_load_unknown_stage():
+def test_load_unknown_step():
     with pytest.raises(UserNotificationException):
-        PipelineLoader[PipelineStep]._load_steps(
-            "install", [PipelineStepConfig(step="StageIDontExist")], Path(".")
-        )
+        PipelineLoader[PipelineStep]._load_steps("install", [PipelineStepConfig(step="StepIDontExist")], Path("."))
 
 
-def test_load_stage_from_file(tmp_path: Path) -> None:
+def test_load_step_from_file(tmp_path: Path) -> None:
     my_python_file = tmp_path / "my_python_file.py"
     my_python_file.write_text(
         textwrap.dedent(
@@ -35,11 +33,7 @@ def test_load_stage_from_file(tmp_path: Path) -> None:
     )
     result = PipelineLoader[PipelineStep]._load_steps(
         "install",
-        [
-            PipelineStepConfig(
-                step="MyStep", file="my_python_file.py", config={"data": "value"}
-            )
-        ],
+        [PipelineStepConfig(step="MyStep", file="my_python_file.py", config={"data": "value"})],
         tmp_path,
     )
     assert len(result) == 1
@@ -59,10 +53,8 @@ class MyCustomPipelineStep:
         return []
 
 
-def test_load_module_stage_builtin():
+def test_load_module_step_builtin():
     module_name = "tests.test_pipeline"
-    stage_class_name = "MyCustomPipelineStep"
-    result = PipelineLoader[MyCustomPipelineStep]._load_module_step(
-        module_name, stage_class_name
-    )
+    step_class_name = "MyCustomPipelineStep"
+    result = PipelineLoader[MyCustomPipelineStep]._load_module_step(module_name, step_class_name)
     assert result == MyCustomPipelineStep

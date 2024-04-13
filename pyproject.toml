@@ -30,29 +30,26 @@ mashumaro = "^3.9.1"
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.0"
 pytest-cov = "^4.0"
-black = "^23.1.0"
+ruff = "^0.3.0"
 pre-commit = "^3.1.1"
-
-[tool.poetry.group.docs]
-optional = true
 
 [tool.poetry.group.docs.dependencies]
 myst-parser = ">=0.16"
 sphinx = ">=4.0"
-sphinx-rtd-theme = ">=1.0"
-m2r = "^0.3.1"
 sphinxcontrib-mermaid = "^0.8.1"
-sphinxcontrib-bibtex = "^2.6.1"
 mlx-traceability = "^10.0.0"
-sphinx-rtd-size = "^0.2.0"
 sphinx-copybutton = "^0.5.2"
-sphinx-new-tab-link = "^0.2.1"
+sphinx-new-tab-link = "^0.2.2"
+sphinx-book-theme = "^1.1.2"
+sphinx-design = "^0.5.0"
 
 [tool.semantic_release]
-branch = "main"
-version_toml = "pyproject.toml:tool.poetry.version"
-version_variable = "src/py_app_dev/__init__.py:__version__"
-build_command = "pip install poetry && poetry build"
+version_toml = ["pyproject.toml:tool.poetry.version"]
+version_variables = [
+    "src/py_app_dev/__init__.py:__version__",
+    "docs/conf.py:release",
+]
+build_command = "poetry build"
 
 [tool.semantic_release.changelog]
 exclude_commit_patterns = [
@@ -62,6 +59,13 @@ exclude_commit_patterns = [
 
 [tool.semantic_release.changelog.environment]
 keep_trailing_newline = true
+
+[tool.semantic_release.branches.main]
+match = "main"
+
+[tool.semantic_release.branches.noop]
+match = "(?!main$)"
+prerelease = true
 
 [tool.pytest.ini_options]
 addopts = "-v -Wdefault --cov=py_app_dev --cov-report=term-missing:skip-covered"
@@ -79,9 +83,52 @@ exclude_lines = [
     'if __name__ == "__main__":',
 ]
 
-[tool.isort]
-profile = "black"
-known_first_party = ["py_app_dev", "tests"]
+[tool.ruff]
+target-version = "py38"
+line-length = 180
+lint.ignore = [
+    "D203", # 1 blank line required before class docstring
+    "D212", # Multi-line docstring summary should start at the first line
+    "D100", # Missing docstring in public module
+    "D101", # Missing docstring in public class
+    "D102", # Missing docstring in public method
+    "D103", # Missing docstring in public function
+    "D104", # Missing docstring in public package
+    "D105", # Missing docstring in magic method
+    "D107", # Missing docstring in `__init__`
+    "D401", # First line of docstring should be in imperative mood
+]
+lint.select = [
+    "B",   # flake8-bugbear
+    "D",   # flake8-docstrings
+    "C4",  # flake8-comprehensions
+    "S",   # flake8-bandit
+    "F",   # pyflake
+    "E",   # pycodestyle
+    "W",   # pycodestyle
+    "UP",  # pyupgrade
+    "I",   # isort
+    "RUF", # ruff specific
+]
+exclude = [
+    "bootstrap.py"
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*" = [
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "S101",
+]
+"setup.py" = ["D100"]
+"conftest.py" = ["D100"]
+"docs/conf.py" = ["D100"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["py_app_dev", "tests"]
 
 [tool.mypy]
 check_untyped_defs = true

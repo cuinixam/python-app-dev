@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import pytest
 
@@ -8,10 +8,10 @@ from py_app_dev.core.runnable import Executor, RunInfoStatus, Runnable
 
 
 class MyRunnable(Runnable):
-    def __init__(self, name: str, inputs: List[Path] = [], outputs: List[Path] = []):
+    def __init__(self, name: str, inputs: Optional[List[Path]] = None, outputs: Optional[List[Path]] = None):
         self._name = name
-        self._inputs = inputs
-        self._outputs = outputs
+        self._inputs = inputs if inputs is not None else []
+        self._outputs = outputs if outputs is not None else []
 
     def get_name(self) -> str:
         return self._name
@@ -106,9 +106,7 @@ def test_mixed_files_and_directories(executor, tmp_path):
     input_dir.mkdir()
     output_file.write_text("output")
     output_dir.mkdir()
-    runnable = MyRunnable(
-        name="test7", inputs=[input_file, input_dir], outputs=[output_file, output_dir]
-    )
+    runnable = MyRunnable(name="test7", inputs=[input_file, input_dir], outputs=[output_file, output_dir])
     executor.execute(runnable)
     assert executor.previous_run_info_matches(runnable) == RunInfoStatus.MATCH
 
@@ -117,6 +115,4 @@ def test_no_inputs_and_no_outputs(executor):
     """Test that Executor correctly handles a runnable with no inputs and no outputs."""
     runnable = MyRunnable(name="test8")
     executor.execute(runnable)
-    assert (
-        executor.previous_run_info_matches(runnable) == RunInfoStatus.NOTHING_TO_CHECK
-    )
+    assert executor.previous_run_info_matches(runnable) == RunInfoStatus.NOTHING_TO_CHECK

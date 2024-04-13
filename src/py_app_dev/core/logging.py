@@ -1,4 +1,4 @@
-""" Logging utilities. """
+"""Logging utilities."""
 
 import sys
 import time

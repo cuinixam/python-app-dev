@@ -11,8 +11,10 @@ class EventID(Enum):
 
 class EventManager:
     """
-    Manages events and their subscribers. One can register callbacks to specific events
-    with any number of arguments. When an event is triggered, all subscribers are called
+    Manages events and their subscribers.
+
+    One can register callbacks to specific events with any number of arguments.
+    When an event is triggered, all subscribers are called
     TODO: There is no check if the callback has the correct number of arguments.
     """
 
@@ -31,9 +33,7 @@ class EventManager:
     def subscribe(self, event_id: EventID, callback: EventCallback) -> None:
         """Subscribes a callback to an event."""
         if self.is_already_subscribed(event_id, callback):
-            raise ValueError(
-                f"Callback {callback} is already subscribed to event {event_id}"
-            )
+            raise ValueError(f"Callback {callback} is already subscribed to event {event_id}")
         self._events.setdefault(event_id, []).append(callback)
 
     def unsubscribe(self, event_id: EventID, callback: EventCallback) -> None:
