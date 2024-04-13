@@ -3,7 +3,17 @@ from abc import ABC
 from dataclasses import dataclass
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
-from typing import Generic, List, Optional, OrderedDict, Type, TypeAlias, TypeVar
+from typing import (
+    Any,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    OrderedDict,
+    Type,
+    TypeAlias,
+    TypeVar,
+)
 
 from mashumaro import DataClassDictMixin
 
@@ -24,6 +34,8 @@ class PipelineStepConfig(DataClassDictMixin):
     description: Optional[str] = None
     #: Step timeout in seconds
     timeout_sec: Optional[int] = None
+    #: Custom step configuration
+    config: Optional[Dict[str, Any]] = None
 
 
 PipelineConfig: TypeAlias = OrderedDict[str, List[PipelineStepConfig]]
@@ -43,6 +55,7 @@ class PipelineStepReference(Generic[TPipelineStep]):
 
     group_name: str
     _class: Type[TPipelineStep]
+    config: Optional[Dict[str, Any]] = None
 
 
 class PipelineLoader(Generic[TPipelineStep]):
@@ -80,7 +93,9 @@ class PipelineLoader(Generic[TPipelineStep]):
                     f"Step '{step_class_name}' has no 'module' nor 'file' defined."
                     " Please check your pipeline configuration."
                 )
-            result.append(PipelineStepReference(group_name, step_class))
+            result.append(
+                PipelineStepReference(group_name, step_class, step_config.config)
+            )
         return result
 
     @staticmethod
