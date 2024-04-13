@@ -8,16 +8,17 @@ from py_app_dev.core.runnable import Executor, RunInfoStatus, Runnable
 
 
 class MyRunnable(Runnable):
-    def __init__(self, name: str, inputs: Optional[List[Path]] = None, outputs: Optional[List[Path]] = None):
+    def __init__(self, name: str, inputs: Optional[List[Path]] = None, outputs: Optional[List[Path]] = None, return_code: int = 0):
         self._name = name
         self._inputs = inputs if inputs is not None else []
         self._outputs = outputs if outputs is not None else []
+        self._return_code = return_code
 
     def get_name(self) -> str:
         return self._name
 
     def run(self) -> int:
-        return 0
+        return self._return_code
 
     def get_inputs(self) -> List[Path]:
         return self._inputs
@@ -116,3 +117,12 @@ def test_no_inputs_and_no_outputs(executor):
     runnable = MyRunnable(name="test8")
     executor.execute(runnable)
     assert executor.previous_run_info_matches(runnable) == RunInfoStatus.NOTHING_TO_CHECK
+
+
+def test_dry_run(executor):
+    """Test that Executor does not execute the run method when dry_run is True."""
+    runnable = MyRunnable(name="test1", return_code=1)
+    executor.dry_run = True
+    assert executor.execute(runnable) == 0
+    executor.dry_run = False
+    assert executor.execute(runnable) == 1

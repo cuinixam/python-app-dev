@@ -50,9 +50,10 @@ class Executor:
 
     RUN_INFO_FILE_EXTENSION = ".deps.json"
 
-    def __init__(self, cache_dir: Path, force_run: bool = False) -> None:
+    def __init__(self, cache_dir: Path, force_run: bool = False, dry_run: bool = False) -> None:
         self.cache_dir = cache_dir
         self.force_run = force_run
+        self.dry_run = dry_run
 
     @staticmethod
     def get_file_hash(path: Path) -> Optional[str]:
@@ -117,6 +118,8 @@ class Executor:
         run_info_status = self.previous_run_info_matches(runnable)
         if run_info_status.should_run:
             logger.info(f"Runnable '{runnable.get_name()}' must run. {run_info_status.message}")
+            if self.dry_run:
+                return 0
             exit_code = runnable.run()
             self.store_run_info(runnable)
             return exit_code
