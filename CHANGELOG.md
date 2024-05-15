@@ -2,6 +2,13 @@
 
 
 
+## v2.3.0 (2024-05-15)
+
+### Feature
+
+* feat: execute runnables without dependency management ([`04c8799`](https://github.com/cuinixam/python-app-dev/commit/04c879935054911426886adaf9dc8f6cfcb39716))
+
+
 ## v2.2.0 (2024-04-13)
 
 ### Documentation
