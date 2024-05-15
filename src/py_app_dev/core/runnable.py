@@ -10,6 +10,9 @@ from .logging import logger
 
 
 class Runnable(ABC):
+    def __init__(self, needs_dependency_management: bool = True) -> None:
+        self.needs_dependency_management = needs_dependency_management
+
     @abstractmethod
     def run(self) -> int:
         """Run and return exit code."""
@@ -115,6 +118,12 @@ class Executor:
         return RunInfoStatus.MATCH
 
     def execute(self, runnable: Runnable) -> int:
+        if not runnable.needs_dependency_management:
+            logger.info(f"Runnable '{runnable.get_name()}' does not need dependency management. Executing directly.")
+            if self.dry_run:
+                return 0
+            return runnable.run()
+
         run_info_status = self.previous_run_info_matches(runnable)
         if run_info_status.should_run:
             logger.info(f"Runnable '{runnable.get_name()}' must run. {run_info_status.message}")
