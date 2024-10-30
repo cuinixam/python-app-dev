@@ -22,17 +22,18 @@ def create_scoop_wrapper(scoop_executable: Optional[Path]) -> ScoopWrapper:
     ):
         with patch(
             "pathlib.Path.home",
-            return_value=scoop_executable.parent
-            if scoop_executable
-            else Path("some/path"),
+            return_value=scoop_executable.parent if scoop_executable else Path("some/path"),
         ):
             scoop_wrapper = ScoopWrapper()
     return scoop_wrapper
 
 
-def test_scoop_installed():
-    scoop_wrapper = create_scoop_wrapper(Path("c:/scoop/scoop.exe"))
-    assert scoop_wrapper.scoop_executable == Path("c:/scoop/scoop.exe")
+def test_scoop_installed(tmp_path: Path) -> None:
+    scoop_exec = tmp_path / "scoop" / "my_scoop.ps1"
+    scoop_exec.parent.mkdir(parents=True)
+    scoop_exec.touch()
+    scoop_wrapper = create_scoop_wrapper(scoop_exec)
+    assert scoop_wrapper.scoop_script == tmp_path / "scoop" / "my_scoop.ps1"
 
 
 def test_scoop_is_not_installed():
@@ -61,11 +62,7 @@ def scoop_dir(tmp_path: Path) -> Path:
     manifest.write_text(manifest_app1_ver1)
     manifest = apps_dir / "app1" / "2.0" / "manifest.json"
     manifest.parent.mkdir(parents=True)
-    manifest.write_text(
-        json.dumps(
-            {"version": "2.0", "bin": [["app/program3.exe", "alias"], "program4.exe"]}
-        )
-    )
+    manifest.write_text(json.dumps({"version": "2.0", "bin": [["app/program3.exe", "alias"], "program4.exe"]}))
 
     manifest = apps_dir / "app2" / "3.1.1" / "manifest.json"
     manifest.parent.mkdir(parents=True)
@@ -89,11 +86,15 @@ def scoop_dir(tmp_path: Path) -> Path:
     manifest.parent.mkdir(parents=True)
     manifest.write_text("dummy manifest file")
 
+    # Create scoop executable
+    scoop_ps1 = scoop_dir / "scoop.ps1"
+    scoop_ps1.touch()
+
     return scoop_dir
 
 
 def test_get_installed_tools(scoop_dir: Path) -> None:
-    scoop_wrapper = create_scoop_wrapper(scoop_dir / "scoop.exe")
+    scoop_wrapper = create_scoop_wrapper(scoop_dir / "scoop.ps1")
 
     # Get the installed tools
     installed_tools = scoop_wrapper.get_installed_apps()
@@ -103,9 +104,7 @@ def test_get_installed_tools(scoop_dir: Path) -> None:
     apps_dir = scoop_dir.joinpath("apps")
 
     # Check the details of individual tools
-    tool1 = next(
-        filter(lambda t: t.name == "app1" and t.version == "1.0", installed_tools)
-    )
+    tool1 = next(filter(lambda t: t.name == "app1" and t.version == "1.0", installed_tools))
     assert tool1.name == "app1"
     assert tool1.version == "1.0"
     assert tool1.path == apps_dir.joinpath("app1/1.0")
@@ -113,9 +112,7 @@ def test_get_installed_tools(scoop_dir: Path) -> None:
     assert tool1.bin_dirs == [Path("bin")]
     assert tool1.env_add_path == []
 
-    tool2 = next(
-        filter(lambda t: t.name == "app1" and t.version == "2.0", installed_tools)
-    )
+    tool2 = next(filter(lambda t: t.name == "app1" and t.version == "2.0", installed_tools))
     assert tool2.name == "app1"
     assert tool2.version == "2.0"
     assert tool2.path == apps_dir.joinpath("app1/2.0")
@@ -219,19 +216,13 @@ def test_map_required_apps_to_installed_apps():
 
     # Test Case 1: All required apps are installed
     app_names = ["app1", "app2"]
-    assert (
-        ScoopWrapper.map_required_apps_to_installed_apps(app_names, installed_apps)
-        == installed_apps
-    )
+    assert ScoopWrapper.map_required_apps_to_installed_apps(app_names, installed_apps) == installed_apps
 
     # Test Case 2: Some required apps are not installed
     app_names = ["app1", "app3"]
     with pytest.raises(UserNotificationException) as e:
         ScoopWrapper.map_required_apps_to_installed_apps(app_names, installed_apps)
-    assert (
-        str(e.value)
-        == "Could not find 'app3' in the installed apps. Something went wrong during the scoop installation."
-    )
+    assert str(e.value) == "Could not find 'app3' in the installed apps. Something went wrong during the scoop installation."
 
     # Test Case 3: No required apps are installed
     app_names = ["app3", "app4"]
@@ -264,9 +255,6 @@ def test_do_install_missing(scoop_dir: Path) -> None:
     scoop_wrapper = create_scoop_wrapper(scoop_dir / "scoop.exe")
 
     with patch("py_app_dev.core.subprocess.SubprocessExecutor.execute", Mock()):
-        assert (
-            len(scoop_wrapper.do_install_missing(scoop_install_config, [app1, app2]))
-            == 0
-        )
+        assert len(scoop_wrapper.do_install_missing(scoop_install_config, [app1, app2])) == 0
         assert len(scoop_wrapper.do_install_missing(scoop_install_config, [app1])) == 1
         assert len(scoop_wrapper.do_install_missing(scoop_install_config, [app3])) == 2

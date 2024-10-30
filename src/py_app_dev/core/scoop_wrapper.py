@@ -85,9 +85,9 @@ class InstalledScoopApp(InstalledApp):
 
 class ScoopWrapper:
     def __init__(self) -> None:
-        self.scoop_executable = self._find_scoop_executable()
-        self.scoop_root_dir = self._find_scoop_root_dir(self.scoop_executable)
         self.logger = logger.bind()
+        self.scoop_script = self._find_scoop_script()
+        self.scoop_root_dir = self._find_scoop_root_dir(self.scoop_script)
 
     @property
     def apps_directory(self) -> Path:
@@ -101,12 +101,16 @@ class ScoopWrapper:
         """
         return self.do_install(ScoopInstallConfigFile.from_file(scoop_file), self.get_installed_apps())
 
-    def _find_scoop_executable(self) -> Path:
+    def _find_scoop_script(self) -> Path:
         scoop_path = which("scoop")
         if not scoop_path:
-            scoop_path = Path().home().joinpath("scoop", "shims", "scoop.cmd")
-            if not scoop_path.is_file():
-                raise UserNotificationException("Scoop not found in PATH or user home directory." " Please install Scoop and run the build script again.")
+            scoop_path = Path().home().joinpath("scoop", "shims", "scoop.ps1")
+        else:
+            # Use the powershell script to make sure the powershell profile is loaded (maybe there are proxy settings)
+            scoop_path = scoop_path.with_suffix(".ps1")
+        self.logger.info(f"Scoop executable: {scoop_path}")
+        if not scoop_path.is_file():
+            raise UserNotificationException("Scoop not found in PATH or user home directory. Please install Scoop and run the build script again.")
         return scoop_path
 
     def _find_scoop_root_dir(self, scoop_executable_path: Path) -> Path:
@@ -204,7 +208,7 @@ class ScoopWrapper:
         with TemporaryDirectory() as tmp_dir:
             tmp_scoop_file = Path(tmp_dir).joinpath("scoopfile.json")
             ScoopInstallConfigFile(scoop_install_config.buckets, apps_to_install).to_file(tmp_scoop_file)
-            SubprocessExecutor([self.scoop_executable, "import", tmp_scoop_file]).execute()
+            SubprocessExecutor(["powershell", self.scoop_script, "import", tmp_scoop_file]).execute()
         return apps_to_install
 
     @staticmethod
