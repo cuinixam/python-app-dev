@@ -2,6 +2,15 @@
 
 
 
+## v2.3.1 (2024-11-23)
+
+### Fix
+
+* fix: scoop install &#39;Get-FileHash&#39; fails ([`6fa3592`](https://github.com/cuinixam/python-app-dev/commit/6fa3592c32760f7b8a6d63026b2a1f4cf65ccdd8))
+
+* fix: scoop.cmd ignores the powershell proxy settings ([`44daef6`](https://github.com/cuinixam/python-app-dev/commit/44daef67ee734b94b2f0f8bfe1afd13c43ecc7df))
+
+
 ## v2.3.0 (2024-05-15)
 
 ### Feature
