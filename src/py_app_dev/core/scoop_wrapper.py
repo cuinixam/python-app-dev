@@ -212,7 +212,7 @@ class ScoopWrapper:
             # (!) Make sure powershell core module does not pollute the module path. Without this change scoop.ps1 fails because 'Get-FileHash' cannot be found.
             # See more details here: https://github.com/PowerShell/PowerShell/issues/8635
             env = os.environ.copy()
-            env["PSModulePath"] = f"{env.get('PSHOME', '')}/Modules"
+            env["PSMODULEPATH"] = f"$PSHOME/Modules;{env.get('PSMODULEPATH', '')}"
             SubprocessExecutor(["powershell.exe", self.scoop_script, "import", tmp_scoop_file], env=env).execute()
         return apps_to_install
 
