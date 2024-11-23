@@ -2,6 +2,13 @@
 
 
 
+## v2.3.2 (2024-11-23)
+
+### Fix
+
+* fix: powershell module path is empty ([`e42bf78`](https://github.com/cuinixam/python-app-dev/commit/e42bf7897ce49d7cf5750e554810990e43474724))
+
+
 ## v2.3.1 (2024-11-23)
 
 ### Fix
