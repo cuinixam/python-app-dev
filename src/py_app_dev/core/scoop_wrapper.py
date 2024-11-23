@@ -1,4 +1,5 @@
 import json
+import os
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
@@ -208,7 +209,11 @@ class ScoopWrapper:
         with TemporaryDirectory() as tmp_dir:
             tmp_scoop_file = Path(tmp_dir).joinpath("scoopfile.json")
             ScoopInstallConfigFile(scoop_install_config.buckets, apps_to_install).to_file(tmp_scoop_file)
-            SubprocessExecutor(["powershell", self.scoop_script, "import", tmp_scoop_file]).execute()
+            # (!) Make sure powershell core module does not pollute the module path. Without this change scoop.ps1 fails because 'Get-FileHash' cannot be found.
+            # See more details here: https://github.com/PowerShell/PowerShell/issues/8635
+            env = os.environ.copy()
+            env["PSModulePath"] = f"{env.get('PSHOME', '')}/Modules"
+            SubprocessExecutor(["powershell.exe", self.scoop_script, "import", tmp_scoop_file], env=env).execute()
         return apps_to_install
 
     @staticmethod
