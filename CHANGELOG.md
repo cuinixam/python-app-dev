@@ -2,6 +2,13 @@
 
 
 
+## v2.3.3 (2024-11-28)
+
+### Fix
+
+* fix: powershell $PSHOME variable is not expanded ([`99f564e`](https://github.com/cuinixam/python-app-dev/commit/99f564ea42f52516f352978917432ad2c7467934))
+
+
 ## v2.3.2 (2024-11-23)
 
 ### Fix
