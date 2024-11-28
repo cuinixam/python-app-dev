@@ -1,4 +1,6 @@
 import json
+import sys
+import textwrap
 from pathlib import Path
 from typing import Optional
 from unittest.mock import Mock, patch
@@ -258,3 +260,22 @@ def test_do_install_missing(scoop_dir: Path) -> None:
         assert len(scoop_wrapper.do_install_missing(scoop_install_config, [app1, app2])) == 0
         assert len(scoop_wrapper.do_install_missing(scoop_install_config, [app1])) == 1
         assert len(scoop_wrapper.do_install_missing(scoop_install_config, [app3])) == 2
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="It requires powershell.")
+def test_scoop_powershell_execution(tmp_path: Path) -> None:
+    # Create a temporary powershell file to use Get-FileHash.
+    ps_file = tmp_path / "test.ps1"
+    ps_file.write_text(
+        textwrap.dedent("""\
+    Write-Host "PSHOME: $PSHOME"
+    Write-Host "PSModulePath: $env:PSModulePath"
+    # Get the hash of the script itself
+    $hash = Get-FileHash -Path $MyInvocation.MyCommand.Path -Algorithm SHA256
+    Write-Host $hash.Hash
+    # Write hash to a file in the same directory
+    $hash | ConvertTo-Json | Set-Content -Path $PSCommandPath.Replace(".ps1", ".hash")
+    """)
+    )
+    ScoopWrapper.run_powershell_command(f"{ps_file.absolute()}", update_ps_module_path=True)
+    assert (tmp_path / "test.hash").exists()
