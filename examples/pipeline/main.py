@@ -2,6 +2,7 @@ import json
 from abc import ABC
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional
 
 from mashumaro import DataClassDictMixin
 
@@ -16,9 +17,10 @@ class ExecutionEnvironment:
 
 
 class PipelineStep(Runnable, ABC):
-    def __init__(self, environment: ExecutionEnvironment, group_name: str) -> None:
+    def __init__(self, environment: ExecutionEnvironment, group_name: Optional[str]) -> None:
+        super().__init__()
         self.environment = environment
-        self.output_dir = self.environment.output_dir / group_name
+        self.output_dir = self.environment.output_dir / group_name if group_name else self.environment.output_dir
 
     @property
     def project_root_dir(self) -> Path:
@@ -32,9 +34,7 @@ class MyConfig(DataClassDictMixin):
 
 def main() -> None:
     this_dir = Path(__file__).parent
-    my_config = MyConfig.from_dict(
-        json.loads(this_dir.joinpath("config.json").read_text())
-    )
+    my_config = MyConfig.from_dict(json.loads(this_dir.joinpath("config.json").read_text()))
     loader = PipelineLoader[PipelineStep](my_config.pipeline, this_dir)
     steps_references = loader.load_steps()
     for step_reference in steps_references:
