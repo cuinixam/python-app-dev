@@ -12,6 +12,7 @@ from typing import (
     Type,
     TypeAlias,
     TypeVar,
+    Union,
 )
 
 from mashumaro import DataClassDictMixin
@@ -37,7 +38,7 @@ class PipelineStepConfig(DataClassDictMixin):
     config: Optional[Dict[str, Any]] = None
 
 
-PipelineConfig: TypeAlias = OrderedDict[str, List[PipelineStepConfig]]
+PipelineConfig: TypeAlias = Union[List[PipelineStepConfig], OrderedDict[str, List[PipelineStepConfig]]]
 
 TPipelineStep = TypeVar("TPipelineStep")
 
@@ -52,7 +53,7 @@ class PipelineStep:
 class PipelineStepReference(Generic[TPipelineStep]):
     """Once a Step is found, keep the Step class reference to be able to instantiate it later."""
 
-    group_name: str
+    group_name: Optional[str]
     _class: Type[TPipelineStep]
     config: Optional[Dict[str, Any]] = None
 
@@ -64,13 +65,20 @@ class PipelineLoader(Generic[TPipelineStep]):
 
     def load_steps(self) -> List[PipelineStepReference[TPipelineStep]]:
         result = []
-        for group_name, steps_config in self.pipeline_config.items():
-            result.extend(self._load_steps(group_name, steps_config, self.project_root_dir))
+        if isinstance(self.pipeline_config, list):
+            # Handle List[PipelineStepConfig]
+            result.extend(self._load_steps(None, self.pipeline_config, self.project_root_dir))
+        elif isinstance(self.pipeline_config, OrderedDict):
+            # Handle OrderedDict[str, List[PipelineStepConfig]]
+            for group_name, steps_config in self.pipeline_config.items():
+                result.extend(self._load_steps(group_name, steps_config, self.project_root_dir))
+        else:
+            raise UserNotificationException("Invalid pipeline configuration. Expected a list or an ordered dictionary.")
         return result
 
     @staticmethod
     def _load_steps(
-        group_name: str,
+        group_name: Optional[str],
         steps_config: List[PipelineStepConfig],
         project_root_dir: Path,
     ) -> List[PipelineStepReference[TPipelineStep]]:
