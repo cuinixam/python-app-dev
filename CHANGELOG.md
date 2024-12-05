@@ -2,6 +2,13 @@
 
 
 
+## v2.4.0 (2024-12-05)
+
+### Feature
+
+* feat: update PipelineConfig to support a Union of List and OrderedDict ([`bb919d6`](https://github.com/cuinixam/python-app-dev/commit/bb919d6462db4d94433b33c02489b11ce418c5d3))
+
+
 ## v2.3.3 (2024-11-28)
 
 ### Fix
