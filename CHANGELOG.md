@@ -2,6 +2,13 @@
 
 
 
+## v2.5.0 (2025-01-20)
+
+### Feature
+
+* feat: provide generic data registry ([`a6806e2`](https://github.com/cuinixam/python-app-dev/commit/a6806e24639d44530825e72ef4074c4b08e806a2))
+
+
 ## v2.4.0 (2024-12-05)
 
 ### Feature
