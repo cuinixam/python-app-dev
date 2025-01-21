@@ -2,6 +2,13 @@
 
 
 
+## v2.6.0 (2025-01-21)
+
+### Feature
+
+* feat: data register supports dynamically loaded classes ([`b4329ef`](https://github.com/cuinixam/python-app-dev/commit/b4329ef5c9b330a7010aabbccd008600df91ccdb))
+
+
 ## v2.5.0 (2025-01-20)
 
 ### Feature
