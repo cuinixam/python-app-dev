@@ -1,15 +1,16 @@
-from dataclasses import dataclass
+from pathlib import Path
 
 from py_app_dev.core.data_registry import DataRegistry
+from py_app_dev.core.pipeline import PipelineLoader, PipelineStep, PipelineStepConfig
+
+
+class SomeData:
+    def __init__(self, data: str):
+        self.data = data
 
 
 class Provider1:
     pass
-
-
-@dataclass
-class SomeData:
-    name: str
 
 
 def test_insert_and_find_data():
@@ -19,7 +20,7 @@ def test_insert_and_find_data():
 
     string_data = registry.find_data(SomeData)
     assert len(string_data) == 1
-    assert string_data[0].name == "new data"
+    assert string_data[0].data == "new data"
 
     int_data = registry.find_data(int)
     assert int_data == [123]
@@ -44,3 +45,21 @@ def test_find_data_empty():
     registry = DataRegistry()
     data = registry.find_data(str)
     assert data == []
+
+
+def test_support_dynamically_loaded_classes(my_python_file: Path) -> None:
+    def load_step():
+        return PipelineLoader[PipelineStep]._load_steps(
+            "install",
+            [PipelineStepConfig(step="MyStep", file=str(my_python_file), config={"data": "value"})],
+            my_python_file.parent,
+        )[0]
+
+    step_class_1st_load = load_step()._class
+    step_class_2nd_load = load_step()._class
+    assert step_class_1st_load != step_class_2nd_load  # Different instances
+    registry = DataRegistry()
+    registry.insert(step_class_1st_load(), "provider1")
+    registry.insert(step_class_2nd_load(), "provider1")
+    data = registry.find_data(step_class_2nd_load)
+    assert len(data) == 2
