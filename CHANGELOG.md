@@ -2,6 +2,13 @@
 
 
 
+## v2.7.0 (2025-01-22)
+
+### Feature
+
+* feat: capture subprocess output ([`de4960c`](https://github.com/cuinixam/python-app-dev/commit/de4960cef867b3978942216db227cfd6a1319439))
+
+
 ## v2.6.0 (2025-01-21)
 
 ### Feature
