@@ -97,6 +97,7 @@ lint.ignore = [
     "D105", # Missing docstring in magic method
     "D107", # Missing docstring in `__init__`
     "D401", # First line of docstring should be in imperative mood
+    "D412", # No blank lines allowed between a section header and its content
 ]
 lint.select = [
     "B",   # flake8-bugbear
