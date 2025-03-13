@@ -2,6 +2,13 @@
 
 
 
+## v2.8.0 (2025-03-13)
+
+### Feature
+
+* feat: add compile commands parsing ([`237adac`](https://github.com/cuinixam/python-app-dev/commit/237adac9b05cf53efa7181dd2b172a97877bc46e))
+
+
 ## v2.7.0 (2025-01-22)
 
 ### Feature

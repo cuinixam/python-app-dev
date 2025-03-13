@@ -20,7 +20,7 @@ for path in ["src", "tests"]:
 project = "Python App Development"
 copyright = f"2023-{datetime.datetime.now().year}, cuinixam"
 author = "cuinixam"
-release = "2.7.0"
+release = "2.8.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
