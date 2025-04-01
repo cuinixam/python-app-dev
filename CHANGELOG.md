@@ -2,6 +2,13 @@
 
 
 
+## v2.9.0 (2025-04-01)
+
+### Feature
+
+* feat: add environment setup scripts generator ([`a7d096b`](https://github.com/cuinixam/python-app-dev/commit/a7d096b8c1fd564f29d762b3307f567863001bae))
+
+
 ## v2.8.0 (2025-03-13)
 
 ### Feature
