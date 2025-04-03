@@ -2,7 +2,7 @@ import json
 import sys
 import textwrap
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional, Tuple, Type
 from unittest.mock import Mock, patch
 
 import pytest
@@ -13,6 +13,7 @@ from py_app_dev.core.scoop_wrapper import (
     ScoopFileElement,
     ScoopInstallConfigFile,
     ScoopWrapper,
+    _semver_compare,
 )
 
 
@@ -195,41 +196,91 @@ def test_scoop_file_parsing(tmp_path: Path) -> None:
     assert scoop_deps.app_names == ["python311", "python"]
 
 
-def test_map_required_apps_to_installed_apps():
-    # Define installed apps
-    installed_apps = [
-        InstalledScoopApp(
-            "app1",
-            "1.0",
-            Path("/path/to/app1"),
-            [],
-            [],
-            Path("/path/to/app1/manifest.json"),
+@pytest.mark.parametrize(
+    "required_apps, installed_apps, expected_app_versions, expected_exception",
+    [
+        (
+            [ScoopFileElement(name="app1", source="test", version=None)],
+            [
+                InstalledScoopApp(
+                    name="app1",
+                    version="1.0.0",
+                    path=Path("app1/1.0.0"),
+                    manifest_file=Path("app1/1.0.0/manifest.json"),
+                    bin_dirs=[],
+                    env_add_path=[],
+                ),
+                InstalledScoopApp(
+                    name="app1",
+                    version="2.0.0",
+                    path=Path("app1/2.0.0"),
+                    manifest_file=Path("app1/2.0.0/manifest.json"),
+                    bin_dirs=[],
+                    env_add_path=[],
+                ),
+            ],
+            ["2.0.0"],  # should pick latest
+            None,
         ),
-        InstalledScoopApp(
-            "app2",
-            "1.0",
-            Path("/path/to/app2"),
-            [],
-            [],
-            Path("/path/to/app2/manifest.json"),
+        (
+            [ScoopFileElement(name="app2", source="test", version="1.0.0")],
+            [
+                InstalledScoopApp(
+                    name="app2",
+                    version="1.0.0",
+                    path=Path("app2/1.0.0"),
+                    manifest_file=Path("app2/1.0.0/manifest.json"),
+                    bin_dirs=[],
+                    env_add_path=[],
+                )
+            ],
+            ["1.0.0"],  # exact match
+            None,
         ),
-    ]
-
-    # Test Case 1: All required apps are installed
-    app_names = ["app1", "app2"]
-    assert ScoopWrapper.map_required_apps_to_installed_apps(app_names, installed_apps) == installed_apps
-
-    # Test Case 2: Some required apps are not installed
-    app_names = ["app1", "app3"]
-    with pytest.raises(UserNotificationException) as e:
-        ScoopWrapper.map_required_apps_to_installed_apps(app_names, installed_apps)
-    assert str(e.value) == "Could not find 'app3' in the installed apps. Something went wrong during the scoop installation."
-
-    # Test Case 3: No required apps are installed
-    app_names = ["app3", "app4"]
-    with pytest.raises(UserNotificationException):
-        ScoopWrapper.map_required_apps_to_installed_apps(app_names, installed_apps)
+        (
+            [ScoopFileElement(name="app3", source="test", version="1.0.0")],
+            [
+                InstalledScoopApp(
+                    name="app3",
+                    version="2.0.0",
+                    path=Path("app3/2.0.0"),
+                    manifest_file=Path("app3/2.0.0/manifest.json"),
+                    bin_dirs=[],
+                    env_add_path=[],
+                )
+            ],
+            [],
+            UserNotificationException,  # version mismatch
+        ),
+        (
+            [ScoopFileElement(name="app4", source="test", version=None)],
+            [
+                InstalledScoopApp(
+                    name="app1",
+                    version="1.0.0",
+                    path=Path("app1/1.0.0"),
+                    manifest_file=Path("app1/1.0.0/manifest.json"),
+                    bin_dirs=[],
+                    env_add_path=[],
+                )
+            ],
+            [],
+            UserNotificationException,  # app not installed
+        ),
+    ],
+)
+def test_map_required_apps_to_installed_apps(
+    required_apps: List[ScoopFileElement],
+    installed_apps: List[InstalledScoopApp],
+    expected_app_versions: List[str],
+    expected_exception: Optional[Type[Exception]],
+) -> None:
+    if expected_exception:
+        with pytest.raises(expected_exception):
+            ScoopWrapper.map_required_apps_to_installed_apps(required_apps, installed_apps)
+    else:
+        result = ScoopWrapper.map_required_apps_to_installed_apps(required_apps, installed_apps)
+        assert [r.version for r in result] == expected_app_versions
 
 
 def test_do_install_missing(scoop_dir: Path) -> None:
@@ -279,3 +330,141 @@ def test_scoop_powershell_execution(tmp_path: Path) -> None:
     )
     ScoopWrapper.run_powershell_command(f"{ps_file.absolute()}", update_ps_module_path=True)
     assert (tmp_path / "test.hash").exists()
+
+
+# Helper to create InstalledScoopApp list easily
+def create_installed_list(apps: List[tuple[str, str]]) -> List[InstalledScoopApp]:
+    return [
+        InstalledScoopApp(name=name, version=ver, path=Path(f"/mock/{name}/{ver}"), manifest_file=Path(f"/mock/{name}/{ver}/manifest.json"), bin_dirs=[], env_add_path=[])
+        for name, ver in apps
+    ]
+
+
+# Helper to create ScoopFileElement list easily
+def create_required_list(apps: List[tuple[str, str, Optional[str]]]) -> List[ScoopFileElement]:
+    return [ScoopFileElement(name=name, source=src, version=ver) for name, src, ver in apps]
+
+
+@pytest.mark.parametrize(
+    "required_apps_data, installed_apps_data, expected_to_install_data",
+    [
+        # Case 1: No apps required, none installed -> Expect empty
+        ([], [], []),
+        # Case 2: Apps required, none installed -> Expect all required
+        (
+            [("git", "main", "2.40"), ("curl", "main", "8.0")],
+            [],
+            [("git", "main", "2.40"), ("curl", "main", "8.0")],
+        ),
+        # Case 3: All required (versioned) apps are installed -> Expect empty
+        (
+            [("git", "main", "2.40"), ("curl", "main", "8.0")],
+            [("git", "2.40"), ("curl", "8.0")],
+            [],
+        ),
+        # Case 4: Some required (versioned) apps installed, some not -> Expect missing
+        (
+            [("git", "main", "2.40"), ("curl", "main", "8.0"), ("7zip", "main", "23.01")],
+            [("git", "2.40"), ("7zip", "23.01")],
+            [("curl", "main", "8.0")],
+        ),
+        # Case 5: Required app has version, installed has DIFFERENT version -> Expect required version
+        (
+            [("git", "main", "2.41")],
+            [("git", "2.40")],
+            [("git", "main", "2.41")],
+        ),
+        # Case 6: Required app has NO version, NO version installed -> Expect required (versionless)
+        (
+            [("git", "main", None)],
+            [],
+            [("git", "main", None)],
+        ),
+        # Case 7: Required app has NO version, SOME version installed -> Expect EMPTY (as one is already installed)
+        (
+            [("git", "main", None)],
+            [("git", "2.40")],
+            [],
+        ),
+        # Case 8: Mix of versioned/non-versioned requirements and installations
+        (
+            [("git", "main", "2.41"), ("curl", "main", None), ("7zip", "main", "23.01"), ("nodejs", "main", None)],
+            [("git", "2.40"), ("curl", "8.0"), ("nodejs", "18.17")],  # git wrong version, curl/nodejs installed, 7zip missing
+            [("git", "main", "2.41"), ("7zip", "main", "23.01")],  # Expect specific git, specific 7zip. Curl/Nodejs satisfied.
+        ),
+        # Case 9: Required app has version, multiple versions installed including required -> Expect empty
+        (
+            [("git", "main", "2.40")],
+            [("git", "2.39"), ("git", "2.40"), ("git", "2.41")],
+            [],
+        ),
+        # Case 10: Required app has version, multiple versions installed excluding required -> Expect required
+        (
+            [("git", "main", "2.42")],
+            [("git", "2.39"), ("git", "2.40"), ("git", "2.41")],
+            [("git", "main", "2.42")],
+        ),
+    ],
+    ids=[
+        "no_required_no_installed",
+        "required_none_installed",
+        "all_required_versioned_installed",
+        "some_required_versioned_installed",
+        "required_version_mismatch",
+        "required_no_version_none_installed",
+        "required_no_version_some_installed",
+        "mixed_requirements_installations",
+        "required_version_present_among_multiple",
+        "required_version_missing_among_multiple",
+    ],
+)
+def test_get_tools_to_be_installed(
+    required_apps_data: List[tuple[str, str, Optional[str]]], installed_apps_data: List[tuple[str, str]], expected_to_install_data: List[tuple[str, str, Optional[str]]]
+) -> None:
+    """Tests the static method get_tools_to_be_installed with various scenarios."""
+    required_apps = create_required_list(required_apps_data)
+    installed_apps = create_installed_list(installed_apps_data)
+    expected_to_install = create_required_list(expected_to_install_data)
+
+    # Call the static method
+    actual_to_install = ScoopWrapper.get_tools_to_be_installed(required_apps, installed_apps)
+
+    # Compare sets for order independence, using the elements themselves (requires __eq__ and __hash__)
+    assert set(actual_to_install) == set(expected_to_install)
+    assert len(actual_to_install) == len(expected_to_install)  # Ensure counts match too
+
+
+TEST_CASES: Tuple[Tuple[str, str, int], ...] = (
+    ("1.0.0", "1.0.0", 0),
+    ("1.2.3", "1-2-3", 0),
+    ("1_0", "1.0", 0),
+    ("1.01", "1.1", 0),
+    ("1.007", "1.7", 0),
+    # Major version
+    ("2.0.0", "1.9.9", 1),
+    ("1.0.0", "0.99.99", 1),
+    ("0.99.99", "1.0.0", -1),
+    # Minor version
+    ("1.10.0", "1.9.5", 1),
+    ("1.1.9", "1.2.0", -1),
+    # Patch version
+    ("1.1.3", "1.1.2", 1),
+    ("1.1.2", "1.1.3", -1),
+    # Handling non-numeric parts (treated as 0)
+    ("1.2.1", "1.2.a", 1),  # 1 > 0
+    ("1.2.beta", "1.2.alpha", 0),  # beta -> 0, alpha -> 0
+    # --- Edge Cases ---
+    ("", "", 0),  # Both empty
+    ("1.0", "", 1),  # v1 present, v2 empty
+    ("", "1.0", -1),  # v1 empty, v2 present
+    ("a", "b", 0),  # Non-numeric treated as 0
+    ("1a", "1b", 0),  # [1, 0] vs [1, 0]
+    ("v1.2", "1.2", 0),  # Leading non-numeric treated as 0 -> [0, 1, 2] vs [1, 2] -> this depends on regex. Correct parts: [1, 2] vs [1, 2]
+    ("snapshot", "release", 0),  # Both map to [0]
+)
+
+
+@pytest.mark.parametrize("v1, v2, expected", TEST_CASES)
+def test_semver_compare(v1: str, v2: str, expected: int) -> None:
+    result = _semver_compare(v1, v2)
+    assert result == expected, f"Comparison of '{v1}' and '{v2}' failed: Expected {expected}, Got {result}"

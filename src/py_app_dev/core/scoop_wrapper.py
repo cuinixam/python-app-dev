@@ -2,6 +2,7 @@ import json
 import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
+from functools import cmp_to_key
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Any, Dict, List, Optional, Union
@@ -14,20 +15,69 @@ from .logging import logger
 from .subprocess import SubprocessExecutor, which  # nosec
 
 
+def _semver_compare(v1: str, v2: str) -> int:
+    """
+    Compare two version strings (naive semver-style).
+
+    Returns
+    -------
+      -1 if v1 < v2
+       0 if v1 == v2
+       1 if v1 > v2
+
+    """
+
+    def to_int(s: Any) -> int:
+        try:
+            return int(s)
+        except ValueError:
+            return 0
+
+    # Split on non-digit characters, ignoring empty pieces
+    parts1 = [to_int(x) for x in re.split(r"[^\d]+", v1) if x]
+    parts2 = [to_int(x) for x in re.split(r"[^\d]+", v2) if x]
+
+    # Compare piecewise
+    for p1, p2 in zip(parts1, parts2):
+        if p1 < p2:
+            return -1
+        elif p1 > p2:
+            return 1
+
+    # If all matched so far, the "longer" one is bigger
+    if len(parts1) < len(parts2):
+        return -1
+    elif len(parts1) > len(parts2):
+        return 1
+
+    return 0
+
+
 @dataclass
 class ScoopFileElement(DataClassDictMixin):
+    """Represents an app or bucket entry in the scoopfile.json."""
+
     name: str = field(metadata={"alias": "Name"})
     source: str = field(metadata={"alias": "Source"})
+    version: Optional[str] = field(default=None, metadata={"alias": "Version"})
 
     def __hash__(self) -> int:
-        return hash(self.name + self.source)
+        return hash(f"{self.name}-{self.source}-{self.version}")
 
     def __str__(self) -> str:
-        return f"({self.source},{self.name})"
+        version_str = f", {self.version}" if self.version else ""
+        return f"({self.source}, {self.name}{version_str})"
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ScoopFileElement):
+            return NotImplemented
+        return self.name == other.name and self.source == other.source and self.version == other.version
 
 
 @dataclass
 class ScoopInstallConfigFile(DataClassJSONMixin):
+    """Represents the structure of the scoopfile.json."""
+
     buckets: List[ScoopFileElement]
     apps: List[ScoopFileElement]
 
@@ -63,11 +113,11 @@ class InstalledApp:
     env_add_path: List[Path]
 
     def get_bin_paths(self) -> List[Path]:
-        """Return the list of bin paths."""
+        """Return the list of absolute bin paths."""
         return [self.path.joinpath(bin_dir) for bin_dir in self.bin_dirs]
 
     def get_env_add_path(self) -> List[Path]:
-        """Return the list of env_add_path paths."""
+        """Return the list of absolute env_add_path paths."""
         return [self.path.joinpath(env_add_path) for env_add_path in self.env_add_path]
 
     def get_all_required_paths(self) -> List[Path]:
@@ -186,7 +236,7 @@ class ScoopWrapper:
             updated_installed_apps = self.get_installed_apps()
         else:
             updated_installed_apps = installed_apps
-        apps = self.map_required_apps_to_installed_apps(scoop_install_config.app_names, updated_installed_apps)
+        apps = self.map_required_apps_to_installed_apps(scoop_install_config.apps, updated_installed_apps)
         return apps
 
     def do_install_missing(
@@ -195,7 +245,7 @@ class ScoopWrapper:
         installed_apps: List[InstalledScoopApp],
     ) -> List[ScoopFileElement]:
         """Check which apps are installed and install the missing ones."""
-        apps_to_install = self.get_tools_to_be_installed(scoop_install_config, installed_apps)
+        apps_to_install = self.get_tools_to_be_installed(scoop_install_config.apps, installed_apps)
         if not apps_to_install:
             self.logger.info("All Scoop apps already installed. Skip installation.")
             return []
@@ -220,23 +270,75 @@ class ScoopWrapper:
 
     @staticmethod
     def map_required_apps_to_installed_apps(
-        app_names: List[str],
+        required_apps: List[ScoopFileElement],
         installed_apps: List[InstalledScoopApp],
     ) -> List[InstalledScoopApp]:
-        """Map the required apps to the installed apps."""
-        # convert the list of installed apps into a dictionary for faster lookup
-        installed_apps_dict = {app.name: app for app in installed_apps}
-        try:
-            apps = [installed_apps_dict[app_name] for app_name in app_names]
-        except KeyError as e:
-            raise UserNotificationException(f"Could not find {e} in the installed apps. Something went wrong during the scoop installation.") from None
+        """
+        Map the required apps to the installed apps.
+
+        If version is specified, we'll look for an exact (name, version) match.
+        If version is not specified, we'll pick the "latest" version that is installed.
+        """
+
+        def _compare_installed_scoop_apps(a: InstalledScoopApp, b: InstalledScoopApp) -> int:
+            return _semver_compare(b.version, a.version)
+
+        # For quicker lookups, group installed apps by name
+        installed_by_name: Dict[str, List[InstalledScoopApp]] = {}
+        for tool in installed_apps:
+            installed_by_name.setdefault(tool.name, []).append(tool)
+
+        # Sort each name group by version, descending (so index 0 is "highest" version)
+        for name in installed_by_name:
+            installed_by_name[name].sort(key=cmp_to_key(_compare_installed_scoop_apps))
+
+        apps: List[InstalledScoopApp] = []
+        for app in required_apps:
+            logger.info(f"Check required app {app.name} {app.version or ''}")
+            if app.name not in installed_by_name:
+                raise UserNotificationException(f"Could not find any version of '{app.name}' in the installed apps. Something went wrong during the scoop installation.")
+
+            if app.version:
+                # Find the exact installed version
+                match = next(
+                    (tool for tool in installed_by_name[app.name] if tool.version == app.version),
+                    None,
+                )
+                if not match:
+                    raise UserNotificationException(f"Could not find '{app.name}' at version '{app.version}' in the installed apps. Installation might have failed.")
+                apps.append(match)
+            else:
+                # Version not specified - pick the "highest" version from installed_by_name
+                # (currently sorted in descending order, so index 0 is "newest")
+                available_versions = [tool.version for tool in installed_by_name[app.name]]
+                latest_tool = installed_by_name[app.name][0]
+                logger.info(f"App '{app.name}' was required without version; using installed version '{latest_tool.version}' from {available_versions}.")
+                apps.append(latest_tool)
+
         return apps
 
     @staticmethod
     def get_tools_to_be_installed(
-        scoop_install_config: ScoopInstallConfigFile,
-        installed_tools: List[InstalledScoopApp],
+        required_apps: List[ScoopFileElement],
+        installed_apps: List[InstalledScoopApp],
     ) -> List[ScoopFileElement]:
-        """Check which apps are installed and install the missing ones."""
-        installed_tools_names = {tool.name for tool in installed_tools}
-        return [app for app in scoop_install_config.apps if app.name not in installed_tools_names]
+        """Determines which apps/versions listed in the scoopfile config are not present in the list of currently installed apps."""
+        # Create a set of tuples for efficient lookup of installed tools
+        installed_tools_set = {(tool.name, tool.version) for tool in installed_apps if tool.version}
+        apps_to_install: List[ScoopFileElement] = []
+        for app in required_apps:
+            logger.info(f"Check app {app.name} {app.version or ''}")
+            # If version is specified in the config, check for exact match
+            if app.version:
+                if (app.name, app.version) not in installed_tools_set:
+                    apps_to_install.append(app)
+            else:
+                # If no version is specified in config, check if *any* version of the app is installed.
+                is_any_version_installed = any(name == app.name for name, _ in installed_tools_set)
+                if not is_any_version_installed:
+                    logger.warning(f"App '{app.name}' in scoopfile has no version. Will attempt install if no version is found.")
+                    apps_to_install.append(app)
+                else:
+                    logger.info(f"App '{app.name}' required without specific version, but found an installed version. Skipping installation attempt for it.")
+
+        return apps_to_install
