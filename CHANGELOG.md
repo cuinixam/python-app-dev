@@ -2,6 +2,13 @@
 
 
 
+## v2.10.0 (2025-04-04)
+
+### Feature
+
+* feat: support version for scoop apps ([`e2484ed`](https://github.com/cuinixam/python-app-dev/commit/e2484ed58b00aced1e02ecb4d808a35ec19b40d3))
+
+
 ## v2.9.0 (2025-04-01)
 
 ### Feature
