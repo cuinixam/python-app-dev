@@ -2,6 +2,13 @@
 
 
 
+## v2.11.2 (2025-04-14)
+
+### Fix
+
+* fix: install scoop app class violates the single responsibility principle ([`641cde0`](https://github.com/cuinixam/python-app-dev/commit/641cde097029f3b11451c24e0802aebd7035738a))
+
+
 ## v2.11.1 (2025-04-14)
 
 ### Fix
