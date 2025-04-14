@@ -130,10 +130,6 @@ class InstalledScoopApp:
         unique_paths = list(dict.fromkeys(all_paths))
         return unique_paths
 
-    def parse_env_vars(self, env_set: Dict[str, str]) -> None:
-        """Parse and populate environment variables from the manifest."""
-        self.env_vars = {key: value.replace("$dir", str(self.path)) for key, value in env_set.items()}
-
 
 class ScoopWrapper:
     def __init__(self) -> None:
@@ -199,12 +195,17 @@ class ScoopWrapper:
         elif isinstance(env_paths, list):
             return [Path(env_path) for env_path in env_paths]
 
+    @staticmethod
+    def parse_env_vars(env_set: Dict[str, str], app_path: Path) -> Dict[str, Any]:
+        """Parse and return environment variables from the manifest."""
+        return {key: value.replace("$dir", str(app_path)) for key, value in env_set.items()}
+
     def parse_manifest_file(self, manifest_file: Path) -> InstalledScoopApp:
         app_directory: Path = manifest_file.parent
         tool_name: str = app_directory.parent.name
         with open(manifest_file) as f:
             manifest_data: Dict[str, Any] = json.load(f)
-            tool_version: str = manifest_data.get("version", None)
+            tool_version: str = manifest_data.get("version", "")
             bin_dirs: List[Path] = self.parse_bin_dirs(manifest_data.get("bin", []))
             env_add_path: List[Path] = self.parse_env_path_dirs(manifest_data.get("env_add_path", []))
             installed_app = InstalledScoopApp(
@@ -214,8 +215,8 @@ class ScoopWrapper:
                 manifest_file=manifest_file,
                 bin_dirs=bin_dirs,
                 env_add_path=env_add_path,
+                env_vars=self.parse_env_vars(manifest_data.get("env_set", {}), app_directory),
             )
-            installed_app.parse_env_vars(manifest_data.get("env_set", {}))
             return installed_app
 
     def get_installed_apps(self) -> List[InstalledScoopApp]:
