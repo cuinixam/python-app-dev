@@ -2,6 +2,17 @@
 
 
 
+## v2.11.0 (2025-04-14)
+
+### Feature
+
+* feat: add support for scoop apps environment variables ([`7b63034`](https://github.com/cuinixam/python-app-dev/commit/7b6303458c527f86aa980d1e86faf1f6c30b18e3))
+
+### Fix
+
+* fix: app directory is added by default to path ([`562372f`](https://github.com/cuinixam/python-app-dev/commit/562372fa69aeb9ea8c678d9114a19697d82377b0))
+
+
 ## v2.10.0 (2025-04-04)
 
 ### Feature
