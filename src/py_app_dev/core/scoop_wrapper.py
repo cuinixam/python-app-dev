@@ -100,7 +100,7 @@ class ScoopInstallConfigFile(DataClassJSONMixin):
 
 
 @dataclass
-class InstalledApp:
+class InstalledScoopApp:
     #: App name
     name: str
     #: App version
@@ -111,6 +111,10 @@ class InstalledApp:
     bin_dirs: List[Path]
     #: List of directories relative to the app path
     env_add_path: List[Path]
+    #: App scoop manifest file
+    manifest_file: Path
+    #: Environment variables defined in the manifest
+    env_vars: Dict[str, Any] = field(default_factory=dict)
 
     def get_bin_paths(self) -> List[Path]:
         """Return the list of absolute bin paths."""
@@ -126,11 +130,9 @@ class InstalledApp:
         unique_paths = list(dict.fromkeys(all_paths))
         return unique_paths
 
-
-@dataclass
-class InstalledScoopApp(InstalledApp):
-    #: App scoop manifest file
-    manifest_file: Path
+    def parse_env_vars(self, env_set: Dict[str, str]) -> None:
+        """Parse and populate environment variables from the manifest."""
+        self.env_vars = {key: value.replace("$dir", str(self.path)) for key, value in env_set.items()}
 
 
 class ScoopWrapper:
@@ -202,7 +204,7 @@ class ScoopWrapper:
             tool_version: str = manifest_data.get("version", None)
             bin_dirs: List[Path] = self.parse_bin_dirs(manifest_data.get("bin", []))
             env_add_path: List[Path] = self.parse_env_path_dirs(manifest_data.get("env_add_path", []))
-            return InstalledScoopApp(
+            installed_app = InstalledScoopApp(
                 name=tool_name,
                 version=tool_version,
                 path=app_directory,
@@ -210,6 +212,8 @@ class ScoopWrapper:
                 bin_dirs=bin_dirs,
                 env_add_path=env_add_path,
             )
+            installed_app.parse_env_vars(manifest_data.get("env_set", {}))
+            return installed_app
 
     def get_installed_apps(self) -> List[InstalledScoopApp]:
         installed_tools: List[InstalledScoopApp] = []

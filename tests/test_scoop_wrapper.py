@@ -2,7 +2,7 @@ import json
 import sys
 import textwrap
 from pathlib import Path
-from typing import List, Optional, Tuple, Type
+from typing import Any, Dict, List, Optional, Tuple, Type
 from unittest.mock import Mock, patch
 
 import pytest
@@ -468,3 +468,35 @@ TEST_CASES: Tuple[Tuple[str, str, int], ...] = (
 def test_semver_compare(v1: str, v2: str, expected: int) -> None:
     result = _semver_compare(v1, v2)
     assert result == expected, f"Comparison of '{v1}' and '{v2}' failed: Expected {expected}, Got {result}"
+
+
+@pytest.mark.parametrize(
+    "env_set, expected_env_vars",
+    [
+        ({"MY_COMP_ROOT": "$dir"}, {"MY_COMP_ROOT": "{path}"}),
+        ({"MY_LIB": "my_lib", "MY_COMP_BIN": "$dir/bin"}, {"MY_LIB": "my_lib", "MY_COMP_BIN": "{path}/bin"}),
+    ],
+)
+def test_env_vars_parsing(scoop_dir: Path, env_set: Dict[str, Any], expected_env_vars: Dict[str, Any]) -> None:
+    scoop_wrapper = create_scoop_wrapper(scoop_dir / "scoop.ps1")
+
+    # Create a mock manifest file with env_set
+    manifest_file = scoop_dir / "apps" / "app_with_env" / "1.0" / "manifest.json"
+    manifest_file.parent.mkdir(parents=True)
+    manifest_file.write_text(
+        json.dumps(
+            {
+                "version": "1.0",
+                "env_set": env_set,
+            }
+        )
+    )
+
+    # Parse the manifest file
+    installed_app = scoop_wrapper.parse_manifest_file(manifest_file)
+
+    # Format expected_env_vars with the actual path
+    formatted_expected_env_vars = {key: value.format(path=str(installed_app.path)) for key, value in expected_env_vars.items()}
+
+    # Assert the environment variables are correctly parsed
+    assert installed_app.env_vars == formatted_expected_env_vars
