@@ -107,38 +107,41 @@ def test_get_installed_tools(scoop_dir: Path) -> None:
     apps_dir = scoop_dir.joinpath("apps")
 
     # Check the details of individual tools
-    tool1 = next(filter(lambda t: t.name == "app1" and t.version == "1.0", installed_tools))
-    assert tool1.name == "app1"
-    assert tool1.version == "1.0"
-    assert tool1.path == apps_dir.joinpath("app1/1.0")
-    assert tool1.manifest_file == tool1.path / "manifest.json"
-    assert tool1.bin_dirs == [Path("bin")]
-    assert tool1.env_add_path == []
+    tool = next(filter(lambda t: t.name == "app1" and t.version == "1.0", installed_tools))
+    assert tool.name == "app1"
+    assert tool.version == "1.0"
+    assert tool.path == apps_dir.joinpath("app1/1.0")
+    assert tool.manifest_file == tool.path / "manifest.json"
+    assert tool.bin_dirs == [Path("bin"), Path(".")]
+    assert tool.env_add_path == []
+    assert tool.get_all_required_paths() == [scoop_dir.joinpath(path) for path in ["apps/app1/1.0/bin", "apps/app1/1.0"]]
 
-    tool2 = next(filter(lambda t: t.name == "app1" and t.version == "2.0", installed_tools))
-    assert tool2.name == "app1"
-    assert tool2.version == "2.0"
-    assert tool2.path == apps_dir.joinpath("app1/2.0")
-    assert tool2.manifest_file == tool2.path / "manifest.json"
-    assert tool2.bin_dirs == [Path("app")]
-    assert tool2.env_add_path == []
+    tool = next(filter(lambda t: t.name == "app1" and t.version == "2.0", installed_tools))
+    assert tool.name == "app1"
+    assert tool.version == "2.0"
+    assert tool.path == apps_dir.joinpath("app1/2.0")
+    assert tool.manifest_file == tool.path / "manifest.json"
+    assert tool.bin_dirs == [Path("app"), Path(".")]
+    assert tool.env_add_path == []
+    assert tool.get_all_required_paths() == [scoop_dir.joinpath(path) for path in ["apps/app1/2.0/app", "apps/app1/2.0"]]
 
-    tool3 = next(filter(lambda t: t.name == "app2", installed_tools))
-    assert tool3.name == "app2"
-    assert tool3.version == "3.1.1"
-    assert tool3.path == apps_dir.joinpath("app2/3.1.1")
-    assert tool3.manifest_file == tool3.path / "manifest.json"
-    assert tool3.bin_dirs == []
-    assert tool3.env_add_path == []
+    tool = next(filter(lambda t: t.name == "app2", installed_tools))
+    assert tool.name == "app2"
+    assert tool.version == "3.1.1"
+    assert tool.path == apps_dir.joinpath("app2/3.1.1")
+    assert tool.manifest_file == tool.path / "manifest.json"
+    assert tool.bin_dirs == [Path(".")]
+    assert tool.env_add_path == []
+    assert tool.get_all_required_paths() == [scoop_dir.joinpath("apps/app2/3.1.1")]
 
-    tool4 = next(filter(lambda t: t.name == "app3", installed_tools))
-    assert tool4.name == "app3"
-    assert tool4.version == "1.0"
-    assert tool4.path == apps_dir.joinpath("app3/1.0")
-    assert tool4.manifest_file == tool4.path / "manifest.json"
-    assert tool4.bin_dirs == [Path("bin")]
-    assert tool4.env_add_path == [Path("bin")]
-    assert len(tool4.get_all_required_paths()) == 1  # Only bin path should be included
+    tool = next(filter(lambda t: t.name == "app3", installed_tools))
+    assert tool.name == "app3"
+    assert tool.version == "1.0"
+    assert tool.path == apps_dir.joinpath("app3/1.0")
+    assert tool.manifest_file == tool.path / "manifest.json"
+    assert tool.bin_dirs == [Path("bin")]
+    assert tool.env_add_path == [Path("bin")]
+    assert tool.get_all_required_paths() == [scoop_dir.joinpath("apps/app3/1.0/bin")]
 
 
 def test_install(scoop_dir: Path, tmp_path: Path) -> None:
@@ -500,3 +503,25 @@ def test_env_vars_parsing(scoop_dir: Path, env_set: Dict[str, Any], expected_env
 
     # Assert the environment variables are correctly parsed
     assert installed_app.env_vars == formatted_expected_env_vars
+
+
+def test_bin_dirs_with_root_executable(scoop_dir: Path) -> None:
+    scoop_wrapper = create_scoop_wrapper(scoop_dir / "scoop.ps1")
+
+    # Create a mock manifest file with a root-level executable
+    manifest_file = scoop_dir / "apps" / "app_with_root_exe" / "1.0" / "manifest.json"
+    manifest_file.parent.mkdir(parents=True)
+    manifest_file.write_text(
+        json.dumps(
+            {
+                "version": "1.0",
+                "bin": "ninja.exe",
+            }
+        )
+    )
+
+    # Parse the manifest file
+    installed_app = scoop_wrapper.parse_manifest_file(manifest_file)
+
+    # Assert the bin_dirs includes the app root directory
+    assert installed_app.bin_dirs == [Path(".")], "The app root directory should be included in bin_dirs for root-level executables."

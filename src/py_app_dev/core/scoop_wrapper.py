@@ -179,7 +179,10 @@ class ScoopWrapper:
 
         def get_parent_dir(bin_entry: Union[str, List[str]]) -> Optional[Path]:
             bin_path = Path(bin_entry[0]) if isinstance(bin_entry, list) else Path(bin_entry)
-            return bin_path.parent if len(bin_path.parts) > 1 else None
+            # If the bin entry is in the app root directory, return the app root directory
+            if len(bin_path.parts) == 1:
+                return Path(".")
+            return bin_path.parent
 
         result = []
         if isinstance(bin_data, str):
