@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "py-app-dev"
-version = "2.11.0"
+version = "2.11.1"
 description = "My application development modules."
 authors = ["cuinixam <me@cuinixam.com>"]
 license = "MIT"

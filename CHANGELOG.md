@@ -2,6 +2,13 @@
 
 
 
+## v2.11.1 (2025-04-14)
+
+### Fix
+
+* fix: directory not added if the binary is in the app root ([`9c5858a`](https://github.com/cuinixam/python-app-dev/commit/9c5858a6c208c5fda7b1b200c8aec3aaad1cd80b))
+
+
 ## v2.11.0 (2025-04-14)
 
 ### Feature
