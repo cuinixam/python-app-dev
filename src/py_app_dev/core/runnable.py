@@ -29,6 +29,14 @@ class Runnable(ABC):
     def get_outputs(self) -> List[Path]:
         """Get runnable outputs."""
 
+    def get_config(self) -> Optional[dict[str, str]]:
+        """
+        Get runnable configuration.
+
+        (!) Do NOT put sensitive information in the configuration. It will be stored in a file.
+        """
+        return None
+
 
 class RunInfoStatus(Enum):
     MATCH = (False, "Nothing changed. Previous execution info matches.")
@@ -37,6 +45,7 @@ class RunInfoStatus(Enum):
     FILE_CHANGED = (True, "File has changed.")
     NOTHING_TO_CHECK = (True, "Nothing to be checked. Assume it shall always run.")
     FORCED_RUN = (True, "Forced run. Ignore previous execution info.")
+    CONFIG_CHANGED = (True, "Configuration has changed.")
 
     def __init__(self, should_run: bool, message: str) -> None:
         self.should_run = should_run
@@ -84,6 +93,11 @@ class Executor:
             "outputs": {str(path): file_hash_to_str(self.get_file_hash(path)) for path in runnable.get_outputs()},
         }
 
+        # Only store config if the runnable has a config
+        config = runnable.get_config()
+        if config is not None:
+            file_info["config"] = config
+
         run_info_path = self.get_runnable_run_info_file(runnable)
         run_info_path.parent.mkdir(parents=True, exist_ok=True)
         with run_info_path.open("w") as f:
@@ -102,6 +116,12 @@ class Executor:
 
         with run_info_path.open() as f:
             previous_info = json.load(f)
+
+        # Check if configuration has changed
+        current_config = runnable.get_config()
+        if "config" in previous_info:
+            if current_config != previous_info["config"]:
+                return RunInfoStatus.CONFIG_CHANGED
 
         # Check if there is anything to be checked
         if any(len(previous_info[file_type]) for file_type in ["inputs", "outputs"]):
