@@ -2,6 +2,13 @@
 
 
 
+## v2.12.0 (2025-04-21)
+
+### Feature
+
+* feat: add runnable config dependency ([`057155b`](https://github.com/cuinixam/python-app-dev/commit/057155bab1d584a28f1cbfbe21ee6cb9acaf88cd))
+
+
 ## v2.11.2 (2025-04-14)
 
 ### Fix
