@@ -2,6 +2,13 @@
 
 
 
+## v2.12.1 (2025-04-23)
+
+### Fix
+
+* fix: manifest file path not shown if parsing failed ([`45e792a`](https://github.com/cuinixam/python-app-dev/commit/45e792a7e278a852d14cbcc6c79530df60f3b71e))
+
+
 ## v2.12.0 (2025-04-21)
 
 ### Feature
