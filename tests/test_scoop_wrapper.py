@@ -525,3 +525,31 @@ def test_bin_dirs_with_root_executable(scoop_dir: Path) -> None:
 
     # Assert the bin_dirs includes the app root directory
     assert installed_app.bin_dirs == [Path(".")], "The app root directory should be included in bin_dirs for root-level executables."
+
+
+def test_parse_manifest_file_invalid_json(scoop_dir: Path) -> None:
+    """Test that parse_manifest_file raises UserNotificationException for invalid JSON."""
+    scoop_wrapper = create_scoop_wrapper(scoop_dir / "scoop.ps1")
+
+    # Create a mock manifest file with invalid JSON
+    manifest_file = scoop_dir / "apps" / "app_with_invalid_json" / "1.0" / "manifest.json"
+    manifest_file.parent.mkdir(parents=True)
+    manifest_file.write_text("{ invalid json }")
+
+    # Assert that UserNotificationException is raised with the correct message
+    with pytest.raises(UserNotificationException, match=f"Failed to parse manifest file: {manifest_file.as_posix()}.*"):
+        scoop_wrapper.parse_manifest_file(manifest_file)
+
+
+def test_parse_manifest_file_invalid_characters(scoop_dir: Path) -> None:
+    """Test that parse_manifest_file raises UserNotificationException for invalid characters."""
+    scoop_wrapper = create_scoop_wrapper(scoop_dir / "scoop.ps1")
+
+    # Create a mock manifest file with invalid characters
+    manifest_file = scoop_dir / "apps" / "app_with_invalid_chars" / "1.0" / "manifest.json"
+    manifest_file.parent.mkdir(parents=True)
+    manifest_file.write_text('\x00\x01\x02{"abc":"val"}')  # Invalid characters
+
+    # Assert that UserNotificationException is raised with the correct message
+    with pytest.raises(UserNotificationException, match=rf"Failed to parse manifest file: {manifest_file.as_posix()}.*"):
+        scoop_wrapper.parse_manifest_file(manifest_file)
