@@ -1,14 +1,21 @@
 # Changes here will be overwritten by Copier
-_commit: 86aebd8
+_commit: 0dd9b46
 _src_path: .
 copyright_year: '2024'
-documentation: true
+documentation: false
 email: cuinixam@me.com
 full_name: cuinixam
 github_username: cuinixam
+has_cli: false
+initial_commit: false
+is_django_package: false
 open_source_license: MIT
+open_with_editor: false
 package_name: py_app_dev
 project_name: Python App Development
 project_short_description: My application development modules.
 project_slug: py-app-dev
+run_uv_sync: false
+setup_github: false
+setup_pre_commit: false
 

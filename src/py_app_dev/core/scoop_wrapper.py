@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from functools import cmp_to_key
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from mashumaro import DataClassDictMixin
 from mashumaro.mixins.json import DataClassJSONMixin
@@ -38,7 +38,7 @@ def _semver_compare(v1: str, v2: str) -> int:
     parts2 = [to_int(x) for x in re.split(r"[^\d]+", v2) if x]
 
     # Compare piecewise
-    for p1, p2 in zip(parts1, parts2):
+    for p1, p2 in zip(parts1, parts2, strict=False):
         if p1 < p2:
             return -1
         elif p1 > p2:
@@ -59,7 +59,7 @@ class ScoopFileElement(DataClassDictMixin):
 
     name: str = field(metadata={"alias": "Name"})
     source: str = field(metadata={"alias": "Source"})
-    version: Optional[str] = field(default=None, metadata={"alias": "Version"})
+    version: str | None = field(default=None, metadata={"alias": "Version"})
 
     def __hash__(self) -> int:
         return hash(f"{self.name}-{self.source}-{self.version}")
@@ -78,15 +78,15 @@ class ScoopFileElement(DataClassDictMixin):
 class ScoopInstallConfigFile(DataClassJSONMixin):
     """Represents the structure of the scoopfile.json."""
 
-    buckets: List[ScoopFileElement]
-    apps: List[ScoopFileElement]
+    buckets: list[ScoopFileElement]
+    apps: list[ScoopFileElement]
 
     @property
-    def bucket_names(self) -> List[str]:
+    def bucket_names(self) -> list[str]:
         return [bucket.name for bucket in self.buckets]
 
     @property
-    def app_names(self) -> List[str]:
+    def app_names(self) -> list[str]:
         return [app.name for app in self.apps]
 
     @classmethod
@@ -108,23 +108,23 @@ class InstalledScoopApp:
     #: App root directory
     path: Path
     #: List of bin directories relative to the app path
-    bin_dirs: List[Path]
+    bin_dirs: list[Path]
     #: List of directories relative to the app path
-    env_add_path: List[Path]
+    env_add_path: list[Path]
     #: App scoop manifest file
     manifest_file: Path
     #: Environment variables defined in the manifest
-    env_vars: Dict[str, Any] = field(default_factory=dict)
+    env_vars: dict[str, Any] = field(default_factory=dict)
 
-    def get_bin_paths(self) -> List[Path]:
+    def get_bin_paths(self) -> list[Path]:
         """Return the list of absolute bin paths."""
         return [self.path.joinpath(bin_dir) for bin_dir in self.bin_dirs]
 
-    def get_env_add_path(self) -> List[Path]:
+    def get_env_add_path(self) -> list[Path]:
         """Return the list of absolute env_add_path paths."""
         return [self.path.joinpath(env_add_path) for env_add_path in self.env_add_path]
 
-    def get_all_required_paths(self) -> List[Path]:
+    def get_all_required_paths(self) -> list[Path]:
         """Return the list of all required paths, maintaining order and removing duplicates."""
         all_paths = [*self.get_bin_paths(), *self.get_env_add_path()]
         unique_paths = list(dict.fromkeys(all_paths))
@@ -141,7 +141,7 @@ class ScoopWrapper:
     def apps_directory(self) -> Path:
         return self.scoop_root_dir.joinpath("apps")
 
-    def install(self, scoop_file: Path) -> List[InstalledScoopApp]:
+    def install(self, scoop_file: Path) -> list[InstalledScoopApp]:
         """
         Install scoop apps from a scoop file.
 
@@ -170,10 +170,10 @@ class ScoopWrapper:
         else:
             raise UserNotificationException(f"Could not determine scoop directory for {scoop_executable_path}.")
 
-    def parse_bin_dirs(self, bin_data: Union[str, List[Union[str, List[str]]]]) -> List[Path]:
+    def parse_bin_dirs(self, bin_data: str | list[str | list[str]]) -> list[Path]:
         """Parse the bin directory from the manifest file."""
 
-        def get_parent_dir(bin_entry: Union[str, List[str]]) -> Optional[Path]:
+        def get_parent_dir(bin_entry: str | list[str]) -> Path | None:
             bin_path = Path(bin_entry[0]) if isinstance(bin_entry, list) else Path(bin_entry)
             # If the bin entry is in the app root directory, return the app root directory
             if len(bin_path.parts) == 1:
@@ -188,7 +188,7 @@ class ScoopWrapper:
         # Remove duplicates and maintain order
         return list(dict.fromkeys(result))
 
-    def parse_env_path_dirs(self, env_paths: Union[str, List[str]]) -> List[Path]:
+    def parse_env_path_dirs(self, env_paths: str | list[str]) -> list[Path]:
         """Parse the env_add_path directories from the manifest file."""
         if isinstance(env_paths, str):
             return [Path(env_paths)]
@@ -196,7 +196,7 @@ class ScoopWrapper:
             return [Path(env_path) for env_path in env_paths]
 
     @staticmethod
-    def parse_env_vars(env_set: Dict[str, str], app_path: Path) -> Dict[str, Any]:
+    def parse_env_vars(env_set: dict[str, str], app_path: Path) -> dict[str, Any]:
         """Parse and return environment variables from the manifest."""
         return {key: value.replace("$dir", str(app_path)) for key, value in env_set.items()}
 
@@ -205,13 +205,13 @@ class ScoopWrapper:
         tool_name: str = app_directory.parent.name
         try:
             with open(manifest_file) as f:
-                manifest_data: Dict[str, Any] = json.load(f)
+                manifest_data: dict[str, Any] = json.load(f)
         except json.JSONDecodeError as e:
             raise UserNotificationException(f"Failed to parse manifest file: {manifest_file.as_posix()}. Error: {e}") from None
 
         tool_version: str = manifest_data.get("version", "")
-        bin_dirs: List[Path] = self.parse_bin_dirs(manifest_data.get("bin", []))
-        env_add_path: List[Path] = self.parse_env_path_dirs(manifest_data.get("env_add_path", []))
+        bin_dirs: list[Path] = self.parse_bin_dirs(manifest_data.get("bin", []))
+        env_add_path: list[Path] = self.parse_env_path_dirs(manifest_data.get("env_add_path", []))
         installed_app = InstalledScoopApp(
             name=tool_name,
             version=tool_version,
@@ -223,8 +223,8 @@ class ScoopWrapper:
         )
         return installed_app
 
-    def get_installed_apps(self) -> List[InstalledScoopApp]:
-        installed_tools: List[InstalledScoopApp] = []
+    def get_installed_apps(self) -> list[InstalledScoopApp]:
+        installed_tools: list[InstalledScoopApp] = []
         self.logger.info(f"Looking for installed apps in {self.apps_directory}")
         manifest_files = [file for file in self.apps_directory.glob("*/*/manifest.json") if "current" != file.parent.name]
 
@@ -238,8 +238,8 @@ class ScoopWrapper:
     def do_install(
         self,
         scoop_install_config: ScoopInstallConfigFile,
-        installed_apps: List[InstalledScoopApp],
-    ) -> List[InstalledScoopApp]:
+        installed_apps: list[InstalledScoopApp],
+    ) -> list[InstalledScoopApp]:
         """Install scoop apps from a scoop file."""
         newly_installed_apps = self.do_install_missing(scoop_install_config, installed_apps)
         # If some apps where just installed we need to update the list of installed apps
@@ -254,8 +254,8 @@ class ScoopWrapper:
     def do_install_missing(
         self,
         scoop_install_config: ScoopInstallConfigFile,
-        installed_apps: List[InstalledScoopApp],
-    ) -> List[ScoopFileElement]:
+        installed_apps: list[InstalledScoopApp],
+    ) -> list[ScoopFileElement]:
         """Check which apps are installed and install the missing ones."""
         apps_to_install = self.get_tools_to_be_installed(scoop_install_config.apps, installed_apps)
         if not apps_to_install:
@@ -282,9 +282,9 @@ class ScoopWrapper:
 
     @staticmethod
     def map_required_apps_to_installed_apps(
-        required_apps: List[ScoopFileElement],
-        installed_apps: List[InstalledScoopApp],
-    ) -> List[InstalledScoopApp]:
+        required_apps: list[ScoopFileElement],
+        installed_apps: list[InstalledScoopApp],
+    ) -> list[InstalledScoopApp]:
         """
         Map the required apps to the installed apps.
 
@@ -296,7 +296,7 @@ class ScoopWrapper:
             return _semver_compare(b.version, a.version)
 
         # For quicker lookups, group installed apps by name
-        installed_by_name: Dict[str, List[InstalledScoopApp]] = {}
+        installed_by_name: dict[str, list[InstalledScoopApp]] = {}
         for tool in installed_apps:
             installed_by_name.setdefault(tool.name, []).append(tool)
 
@@ -304,7 +304,7 @@ class ScoopWrapper:
         for name in installed_by_name:
             installed_by_name[name].sort(key=cmp_to_key(_compare_installed_scoop_apps))
 
-        apps: List[InstalledScoopApp] = []
+        apps: list[InstalledScoopApp] = []
         for app in required_apps:
             logger.info(f"Check required app {app.name} {app.version or ''}")
             if app.name not in installed_by_name:
@@ -331,13 +331,13 @@ class ScoopWrapper:
 
     @staticmethod
     def get_tools_to_be_installed(
-        required_apps: List[ScoopFileElement],
-        installed_apps: List[InstalledScoopApp],
-    ) -> List[ScoopFileElement]:
+        required_apps: list[ScoopFileElement],
+        installed_apps: list[InstalledScoopApp],
+    ) -> list[ScoopFileElement]:
         """Determines which apps/versions listed in the scoopfile config are not present in the list of currently installed apps."""
         # Create a set of tuples for efficient lookup of installed tools
         installed_tools_set = {(tool.name, tool.version) for tool in installed_apps if tool.version}
-        apps_to_install: List[ScoopFileElement] = []
+        apps_to_install: list[ScoopFileElement] = []
         for app in required_apps:
             logger.info(f"Check app {app.name} {app.version or ''}")
             # If version is specified in the config, check for exact match

@@ -4,7 +4,6 @@ import json
 from abc import ABC, abstractmethod
 from enum import Enum
 from pathlib import Path
-from typing import List, Optional
 
 from .logging import logger
 
@@ -22,14 +21,14 @@ class Runnable(ABC):
         """Get runnable name."""
 
     @abstractmethod
-    def get_inputs(self) -> List[Path]:
+    def get_inputs(self) -> list[Path]:
         """Get runnable dependencies."""
 
     @abstractmethod
-    def get_outputs(self) -> List[Path]:
+    def get_outputs(self) -> list[Path]:
         """Get runnable outputs."""
 
-    def get_config(self) -> Optional[dict[str, str]]:
+    def get_config(self) -> dict[str, str] | None:
         """
         Get runnable configuration.
 
@@ -68,7 +67,7 @@ class Executor:
         self.dry_run = dry_run
 
     @staticmethod
-    def get_file_hash(path: Path) -> Optional[str]:
+    def get_file_hash(path: Path) -> str | None:
         if path.is_file():
             with open(path, "rb") as file:
                 bytes = file.read()
@@ -82,7 +81,7 @@ class Executor:
             return None
 
     def store_run_info(self, runnable: Runnable) -> None:
-        def file_hash_to_str(file_hash: Optional[str]) -> str:
+        def file_hash_to_str(file_hash: str | None) -> str:
             if file_hash is None:
                 return "NOT_FOUND"
             else:

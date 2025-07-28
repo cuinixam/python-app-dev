@@ -1,17 +1,29 @@
 import json
+from collections.abc import Generator
 from pathlib import Path
-from typing import Generator
 
 import pytest
 
-from py_app_dev.core.compile_commands import CompilationDatabase, CompilationOptionsManager, CompileCommand
+from py_app_dev.core.compile_commands import (
+    CompilationDatabase,
+    CompilationOptionsManager,
+    CompileCommand,
+)
 
 
 @pytest.fixture
 def temp_compilation_database(tmp_path: Path) -> Generator[Path, None, None]:
     db_content = [
-        {"directory": tmp_path.as_posix(), "file": "test1.c", "arguments": ["gcc", "-I/usr/include", "-DDEBUG", "test1.c"]},
-        {"directory": tmp_path.as_posix(), "file": "test2.c", "command": "gcc -c -O2 test2.c"},
+        {
+            "directory": tmp_path.as_posix(),
+            "file": "test1.c",
+            "arguments": ["gcc", "-I/usr/include", "-DDEBUG", "test1.c"],
+        },
+        {
+            "directory": tmp_path.as_posix(),
+            "file": "test2.c",
+            "command": "gcc -c -O2 test2.c",
+        },
     ]
     db_file = tmp_path / "compile_commands.json"
     db_file.write_text(json.dumps(db_content))
@@ -23,7 +35,9 @@ def test_compilation_options_manager_without_database() -> None:
     assert manager.get_compile_options(Path("any_file.c")) == ["-std=c11"]
 
 
-def test_compilation_options_manager_with_database(temp_compilation_database: Path) -> None:
+def test_compilation_options_manager_with_database(
+    temp_compilation_database: Path,
+) -> None:
     manager = CompilationOptionsManager(temp_compilation_database)
 
     # Test for file in the database
@@ -116,40 +130,104 @@ def test_get_compile_commands() -> None:
 
 @pytest.fixture
 def compile_command():
-    return CompileCommand(directory=Path("/home/user/project"), file=Path("/home/user/project/input.c"), output=Path("/home/user/project/output.o"))
+    return CompileCommand(
+        directory=Path("/home/user/project"),
+        file=Path("/home/user/project/input.c"),
+        output=Path("/home/user/project/output.o"),
+    )
 
 
 def test_clean_up_arguments_basic(compile_command):
-    arguments = ["gcc", "-DStuff", "-ISome/Path", "-o", "/home/user/project/output.o", "/home/user/project/input.c"]
+    arguments = [
+        "gcc",
+        "-DStuff",
+        "-ISome/Path",
+        "-o",
+        "/home/user/project/output.o",
+        "/home/user/project/input.c",
+    ]
     expected = ["-DStuff", "-ISome/Path"]
     assert compile_command.clean_up_arguments(arguments) == expected
 
 
 def test_clean_up_arguments_with_c_option(compile_command):
-    arguments = ["gcc", "-DStuff", "-ISome/Path", "-c", "-o", "/home/user/project/output.o", "/home/user/project/input.c"]
+    arguments = [
+        "gcc",
+        "-DStuff",
+        "-ISome/Path",
+        "-c",
+        "-o",
+        "/home/user/project/output.o",
+        "/home/user/project/input.c",
+    ]
     expected = ["-DStuff", "-ISome/Path"]
     assert compile_command.clean_up_arguments(arguments) == expected
 
 
 def test_clean_up_arguments_with_combined_options(compile_command):
-    arguments = ["gcc", "-DStuff", "-ISome/Path", "-c", "-o/home/user/project/output.o", "/home/user/project/input.c"]
+    arguments = [
+        "gcc",
+        "-DStuff",
+        "-ISome/Path",
+        "-c",
+        "-o/home/user/project/output.o",
+        "/home/user/project/input.c",
+    ]
     expected = ["-DStuff", "-ISome/Path"]
     assert compile_command.clean_up_arguments(arguments) == expected
 
 
 def test_clean_up_arguments_with_multiple_input_files(compile_command):
-    arguments = ["gcc", "-DStuff", "-ISome/Path", "-c", "/home/user/project/input.c", "/home/user/project/helper.c", "-o", "/home/user/project/output.o"]
+    arguments = [
+        "gcc",
+        "-DStuff",
+        "-ISome/Path",
+        "-c",
+        "/home/user/project/input.c",
+        "/home/user/project/helper.c",
+        "-o",
+        "/home/user/project/output.o",
+    ]
     expected = ["-DStuff", "-ISome/Path", "/home/user/project/helper.c"]
     assert compile_command.clean_up_arguments(arguments) == expected
 
 
 def test_clean_up_arguments_with_complex_options(compile_command):
-    arguments = ["gcc", "-DStuff", "-ISome/Path", "-Werror", "-Wall", "-std=c11", '-DVERSION="1.0"', "-c", "/home/user/project/input.c", "-o", "/home/user/project/output.o"]
-    expected = ["-DStuff", "-ISome/Path", "-Werror", "-Wall", "-std=c11", '-DVERSION="1.0"']
+    arguments = [
+        "gcc",
+        "-DStuff",
+        "-ISome/Path",
+        "-Werror",
+        "-Wall",
+        "-std=c11",
+        '-DVERSION="1.0"',
+        "-c",
+        "/home/user/project/input.c",
+        "-o",
+        "/home/user/project/output.o",
+    ]
+    expected = [
+        "-DStuff",
+        "-ISome/Path",
+        "-Werror",
+        "-Wall",
+        "-std=c11",
+        '-DVERSION="1.0"',
+    ]
     assert compile_command.clean_up_arguments(arguments) == expected
 
 
 def test_clean_up_arguments_with_partial_paths(compile_command):
-    arguments = ["gcc", "-DStuff", "-I/home/user/project", "-Werror", "-Wall", "-c", "project/input.c", "-o", "project/output.o"]
+    arguments = [
+        "gcc",
+        "-DStuff",
+        "-I/home/user/project",
+        "-Werror",
+        "-Wall",
+        "-c",
+        "project/input.c",
+        "-o",
+        "project/output.o",
+    ]
     expected = ["-DStuff", "-I/home/user/project", "-Werror", "-Wall"]
     assert compile_command.clean_up_arguments(arguments) == expected

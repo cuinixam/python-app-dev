@@ -2,7 +2,7 @@ import json
 import sys
 import textwrap
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Type
+from typing import Any
 from unittest.mock import Mock, patch
 
 import pytest
@@ -17,7 +17,7 @@ from py_app_dev.core.scoop_wrapper import (
 )
 
 
-def create_scoop_wrapper(scoop_executable: Optional[Path]) -> ScoopWrapper:
+def create_scoop_wrapper(scoop_executable: Path | None) -> ScoopWrapper:
     """Patch the 'which' function to return a valid path to the scoop executable."""
     with patch(
         "py_app_dev.core.scoop_wrapper.which",
@@ -273,10 +273,10 @@ def test_scoop_file_parsing(tmp_path: Path) -> None:
     ],
 )
 def test_map_required_apps_to_installed_apps(
-    required_apps: List[ScoopFileElement],
-    installed_apps: List[InstalledScoopApp],
-    expected_app_versions: List[str],
-    expected_exception: Optional[Type[Exception]],
+    required_apps: list[ScoopFileElement],
+    installed_apps: list[InstalledScoopApp],
+    expected_app_versions: list[str],
+    expected_exception: type[Exception] | None,
 ) -> None:
     if expected_exception:
         with pytest.raises(expected_exception):
@@ -336,15 +336,24 @@ def test_scoop_powershell_execution(tmp_path: Path) -> None:
 
 
 # Helper to create InstalledScoopApp list easily
-def create_installed_list(apps: List[tuple[str, str]]) -> List[InstalledScoopApp]:
+def create_installed_list(apps: list[tuple[str, str]]) -> list[InstalledScoopApp]:
     return [
-        InstalledScoopApp(name=name, version=ver, path=Path(f"/mock/{name}/{ver}"), manifest_file=Path(f"/mock/{name}/{ver}/manifest.json"), bin_dirs=[], env_add_path=[])
+        InstalledScoopApp(
+            name=name,
+            version=ver,
+            path=Path(f"/mock/{name}/{ver}"),
+            manifest_file=Path(f"/mock/{name}/{ver}/manifest.json"),
+            bin_dirs=[],
+            env_add_path=[],
+        )
         for name, ver in apps
     ]
 
 
 # Helper to create ScoopFileElement list easily
-def create_required_list(apps: List[tuple[str, str, Optional[str]]]) -> List[ScoopFileElement]:
+def create_required_list(
+    apps: list[tuple[str, str, str | None]],
+) -> list[ScoopFileElement]:
     return [ScoopFileElement(name=name, source=src, version=ver) for name, src, ver in apps]
 
 
@@ -367,7 +376,11 @@ def create_required_list(apps: List[tuple[str, str, Optional[str]]]) -> List[Sco
         ),
         # Case 4: Some required (versioned) apps installed, some not -> Expect missing
         (
-            [("git", "main", "2.40"), ("curl", "main", "8.0"), ("7zip", "main", "23.01")],
+            [
+                ("git", "main", "2.40"),
+                ("curl", "main", "8.0"),
+                ("7zip", "main", "23.01"),
+            ],
             [("git", "2.40"), ("7zip", "23.01")],
             [("curl", "main", "8.0")],
         ),
@@ -391,9 +404,21 @@ def create_required_list(apps: List[tuple[str, str, Optional[str]]]) -> List[Sco
         ),
         # Case 8: Mix of versioned/non-versioned requirements and installations
         (
-            [("git", "main", "2.41"), ("curl", "main", None), ("7zip", "main", "23.01"), ("nodejs", "main", None)],
-            [("git", "2.40"), ("curl", "8.0"), ("nodejs", "18.17")],  # git wrong version, curl/nodejs installed, 7zip missing
-            [("git", "main", "2.41"), ("7zip", "main", "23.01")],  # Expect specific git, specific 7zip. Curl/Nodejs satisfied.
+            [
+                ("git", "main", "2.41"),
+                ("curl", "main", None),
+                ("7zip", "main", "23.01"),
+                ("nodejs", "main", None),
+            ],
+            [
+                ("git", "2.40"),
+                ("curl", "8.0"),
+                ("nodejs", "18.17"),
+            ],  # git wrong version, curl/nodejs installed, 7zip missing
+            [
+                ("git", "main", "2.41"),
+                ("7zip", "main", "23.01"),
+            ],  # Expect specific git, specific 7zip. Curl/Nodejs satisfied.
         ),
         # Case 9: Required app has version, multiple versions installed including required -> Expect empty
         (
@@ -422,7 +447,9 @@ def create_required_list(apps: List[tuple[str, str, Optional[str]]]) -> List[Sco
     ],
 )
 def test_get_tools_to_be_installed(
-    required_apps_data: List[tuple[str, str, Optional[str]]], installed_apps_data: List[tuple[str, str]], expected_to_install_data: List[tuple[str, str, Optional[str]]]
+    required_apps_data: list[tuple[str, str, str | None]],
+    installed_apps_data: list[tuple[str, str]],
+    expected_to_install_data: list[tuple[str, str, str | None]],
 ) -> None:
     """Tests the static method get_tools_to_be_installed with various scenarios."""
     required_apps = create_required_list(required_apps_data)
@@ -437,7 +464,7 @@ def test_get_tools_to_be_installed(
     assert len(actual_to_install) == len(expected_to_install)  # Ensure counts match too
 
 
-TEST_CASES: Tuple[Tuple[str, str, int], ...] = (
+TEST_CASES: tuple[tuple[str, str, int], ...] = (
     ("1.0.0", "1.0.0", 0),
     ("1.2.3", "1-2-3", 0),
     ("1_0", "1.0", 0),
@@ -462,7 +489,11 @@ TEST_CASES: Tuple[Tuple[str, str, int], ...] = (
     ("", "1.0", -1),  # v1 empty, v2 present
     ("a", "b", 0),  # Non-numeric treated as 0
     ("1a", "1b", 0),  # [1, 0] vs [1, 0]
-    ("v1.2", "1.2", 0),  # Leading non-numeric treated as 0 -> [0, 1, 2] vs [1, 2] -> this depends on regex. Correct parts: [1, 2] vs [1, 2]
+    (
+        "v1.2",
+        "1.2",
+        0,
+    ),  # Leading non-numeric treated as 0 -> [0, 1, 2] vs [1, 2] -> this depends on regex. Correct parts: [1, 2] vs [1, 2]
     ("snapshot", "release", 0),  # Both map to [0]
 )
 
@@ -477,10 +508,13 @@ def test_semver_compare(v1: str, v2: str, expected: int) -> None:
     "env_set, expected_env_vars",
     [
         ({"MY_COMP_ROOT": "$dir"}, {"MY_COMP_ROOT": "{path}"}),
-        ({"MY_LIB": "my_lib", "MY_COMP_BIN": "$dir/bin"}, {"MY_LIB": "my_lib", "MY_COMP_BIN": "{path}/bin"}),
+        (
+            {"MY_LIB": "my_lib", "MY_COMP_BIN": "$dir/bin"},
+            {"MY_LIB": "my_lib", "MY_COMP_BIN": "{path}/bin"},
+        ),
     ],
 )
-def test_env_vars_parsing(scoop_dir: Path, env_set: Dict[str, Any], expected_env_vars: Dict[str, Any]) -> None:
+def test_env_vars_parsing(scoop_dir: Path, env_set: dict[str, Any], expected_env_vars: dict[str, Any]) -> None:
     scoop_wrapper = create_scoop_wrapper(scoop_dir / "scoop.ps1")
 
     # Create a mock manifest file with env_set
@@ -537,7 +571,10 @@ def test_parse_manifest_file_invalid_json(scoop_dir: Path) -> None:
     manifest_file.write_text("{ invalid json }")
 
     # Assert that UserNotificationException is raised with the correct message
-    with pytest.raises(UserNotificationException, match=f"Failed to parse manifest file: {manifest_file.as_posix()}.*"):
+    with pytest.raises(
+        UserNotificationException,
+        match=f"Failed to parse manifest file: {manifest_file.as_posix()}.*",
+    ):
         scoop_wrapper.parse_manifest_file(manifest_file)
 
 
@@ -551,5 +588,8 @@ def test_parse_manifest_file_invalid_characters(scoop_dir: Path) -> None:
     manifest_file.write_text('\x00\x01\x02{"abc":"val"}')  # Invalid characters
 
     # Assert that UserNotificationException is raised with the correct message
-    with pytest.raises(UserNotificationException, match=rf"Failed to parse manifest file: {manifest_file.as_posix()}.*"):
+    with pytest.raises(
+        UserNotificationException,
+        match=rf"Failed to parse manifest file: {manifest_file.as_posix()}.*",
+    ):
         scoop_wrapper.parse_manifest_file(manifest_file)

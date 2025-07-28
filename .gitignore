@@ -117,11 +117,11 @@ ENV/
 env.bak/
 venv.bak/
 
-# Spyder {{package_name}} settings
+# Spyder py_app_dev settings
 .spyderproject
 .spyproject
 
-# Rope {{package_name}} settings
+# Rope py_app_dev settings
 .ropeproject
 
 # mkdocs documentation
@@ -141,4 +141,5 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+# Bootstrap files
 .bootstrap/

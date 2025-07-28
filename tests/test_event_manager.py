@@ -1,6 +1,6 @@
 # create tests for EventManager
 from enum import auto
-from typing import Any, List
+from typing import Any
 
 import pytest
 
@@ -71,7 +71,7 @@ def test_can_not_subscribe_twice():
 
 
 def test_subscribe_with_args():
-    received_args: List[Any] = []
+    received_args: list[Any] = []
     received_kwargs = {}
 
     def my_callback_with_args(*args, **kwargs):

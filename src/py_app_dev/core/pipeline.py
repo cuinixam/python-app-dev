@@ -1,18 +1,13 @@
 import importlib
+from collections import OrderedDict
 from dataclasses import dataclass
 from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 from typing import (
     Any,
-    Dict,
     Generic,
-    List,
-    Optional,
-    OrderedDict,
-    Type,
     TypeAlias,
     TypeVar,
-    Union,
 )
 
 from mashumaro import DataClassDictMixin
@@ -25,20 +20,20 @@ class PipelineStepConfig(DataClassDictMixin):
     #: Step name or class name if file is not specified
     step: str
     #: Path to file with step class
-    file: Optional[str] = None
+    file: str | None = None
     #: Python module with step class
-    module: Optional[str] = None
+    module: str | None = None
     #: Step class name
-    class_name: Optional[str] = None
+    class_name: str | None = None
     #: Step description
-    description: Optional[str] = None
+    description: str | None = None
     #: Step timeout in seconds
-    timeout_sec: Optional[int] = None
+    timeout_sec: int | None = None
     #: Custom step configuration
-    config: Optional[Dict[str, Any]] = None
+    config: dict[str, Any] | None = None
 
 
-PipelineConfig: TypeAlias = Union[List[PipelineStepConfig], OrderedDict[str, List[PipelineStepConfig]]]
+PipelineConfig: TypeAlias = list[PipelineStepConfig] | OrderedDict[str, list[PipelineStepConfig]]
 
 TPipelineStep = TypeVar("TPipelineStep")
 
@@ -53,9 +48,9 @@ class PipelineStep:
 class PipelineStepReference(Generic[TPipelineStep]):
     """Once a Step is found, keep the Step class reference to be able to instantiate it later."""
 
-    group_name: Optional[str]
-    _class: Type[TPipelineStep]
-    config: Optional[Dict[str, Any]] = None
+    group_name: str | None
+    _class: type[TPipelineStep]
+    config: dict[str, Any] | None = None
 
 
 class PipelineLoader(Generic[TPipelineStep]):
@@ -63,7 +58,7 @@ class PipelineLoader(Generic[TPipelineStep]):
         self.pipeline_config = pipeline_config
         self.project_root_dir = project_root_dir
 
-    def load_steps(self) -> List[PipelineStepReference[TPipelineStep]]:
+    def load_steps(self) -> list[PipelineStepReference[TPipelineStep]]:
         result = []
         if isinstance(self.pipeline_config, list):
             # Handle List[PipelineStepConfig]
@@ -78,10 +73,10 @@ class PipelineLoader(Generic[TPipelineStep]):
 
     @staticmethod
     def _load_steps(
-        group_name: Optional[str],
-        steps_config: List[PipelineStepConfig],
+        group_name: str | None,
+        steps_config: list[PipelineStepConfig],
         project_root_dir: Path,
-    ) -> List[PipelineStepReference[TPipelineStep]]:
+    ) -> list[PipelineStepReference[TPipelineStep]]:
         result = []
         for step_config in steps_config:
             step_class_name = step_config.class_name or step_config.step
@@ -90,12 +85,12 @@ class PipelineLoader(Generic[TPipelineStep]):
             elif step_config.file:
                 step_class = PipelineLoader[TPipelineStep]._load_user_step(project_root_dir.joinpath(step_config.file), step_class_name)
             else:
-                raise UserNotificationException(f"Step '{step_class_name}' has no 'module' nor 'file' defined." " Please check your pipeline configuration.")
+                raise UserNotificationException(f"Step '{step_class_name}' has no 'module' nor 'file' defined. Please check your pipeline configuration.")
             result.append(PipelineStepReference(group_name, step_class, step_config.config))
         return result
 
     @staticmethod
-    def _load_user_step(python_file: Path, step_class_name: str) -> Type[TPipelineStep]:
+    def _load_user_step(python_file: Path, step_class_name: str) -> type[TPipelineStep]:
         # Create a module specification from the file path
         spec = spec_from_file_location(f"user__{step_class_name}", python_file)
         if spec and spec.loader:
@@ -105,17 +100,17 @@ class PipelineLoader(Generic[TPipelineStep]):
             try:
                 step_class = getattr(step_module, step_class_name)
             except AttributeError:
-                raise UserNotificationException(f"Could not load class '{step_class_name}' from file '{python_file}'." " Please check your pipeline configuration.") from None
+                raise UserNotificationException(f"Could not load class '{step_class_name}' from file '{python_file}'. Please check your pipeline configuration.") from None
             return step_class
-        raise UserNotificationException(f"Could not load file '{python_file}'." " Please check the file for any errors.")
+        raise UserNotificationException(f"Could not load file '{python_file}'. Please check the file for any errors.")
 
     @staticmethod
-    def _load_module_step(module_name: str, step_class_name: str) -> Type[TPipelineStep]:
+    def _load_module_step(module_name: str, step_class_name: str) -> type[TPipelineStep]:
         try:
             module = importlib.import_module(module_name)
             step_class = getattr(module, step_class_name)
         except ImportError:
             raise UserNotificationException(f"Could not load module '{module_name}'. Please check your pipeline configuration.") from None
         except AttributeError:
-            raise UserNotificationException(f"Could not load class '{step_class_name}' from module '{module_name}'." " Please check your pipeline configuration.") from None
+            raise UserNotificationException(f"Could not load class '{step_class_name}' from module '{module_name}'. Please check your pipeline configuration.") from None
         return step_class

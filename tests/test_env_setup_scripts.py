@@ -1,21 +1,23 @@
 import platform
 from pathlib import Path
 from textwrap import dedent
-from typing import Dict, List
 
 import pytest
 
-from py_app_dev.core.env_setup_scripts import BatEnvSetupScriptGenerator, Ps1EnvSetupScriptGenerator
+from py_app_dev.core.env_setup_scripts import (
+    BatEnvSetupScriptGenerator,
+    Ps1EnvSetupScriptGenerator,
+)
 from py_app_dev.core.subprocess import SubprocessExecutor
 
 
 @pytest.fixture
-def sample_environment() -> Dict[str, str]:
+def sample_environment() -> dict[str, str]:
     return {"VAR1": "value1", "VAR2": "value2 with spaces"}
 
 
 @pytest.fixture
-def sample_install_dirs(tmp_path: Path) -> List[Path]:
+def sample_install_dirs(tmp_path: Path) -> list[Path]:
     dir_a = tmp_path / "dirA"
     dir_b = tmp_path / "dirB"
     dir_a.mkdir()
@@ -23,9 +25,13 @@ def sample_install_dirs(tmp_path: Path) -> List[Path]:
     return [dir_a, dir_b]
 
 
-def test_bat_setup_script(tmp_path: Path, sample_environment: Dict[str, str], sample_install_dirs: List[Path]) -> None:
+def test_bat_setup_script(tmp_path: Path, sample_environment: dict[str, str], sample_install_dirs: list[Path]) -> None:
     output_file = tmp_path / "setup_env.bat"
-    generator = BatEnvSetupScriptGenerator(install_dirs=sample_install_dirs, environment=sample_environment, output_file=output_file)
+    generator = BatEnvSetupScriptGenerator(
+        install_dirs=sample_install_dirs,
+        environment=sample_environment,
+        output_file=output_file,
+    )
 
     generator.to_file()
     content = output_file.read_text("utf-8")
@@ -41,14 +47,18 @@ def test_bat_setup_script(tmp_path: Path, sample_environment: Dict[str, str], sa
 
 
 @pytest.mark.skipif(platform.system().lower() != "windows", reason="Requires Windows")
-def test_bat_setup_script_integration(tmp_path: Path, sample_environment: Dict[str, str], sample_install_dirs: List[Path]) -> None:
+def test_bat_setup_script_integration(tmp_path: Path, sample_environment: dict[str, str], sample_install_dirs: list[Path]) -> None:
     bat_script = tmp_path / "setup_env.bat"
-    gen = BatEnvSetupScriptGenerator(install_dirs=sample_install_dirs, environment=sample_environment, output_file=bat_script)
+    gen = BatEnvSetupScriptGenerator(
+        install_dirs=sample_install_dirs,
+        environment=sample_environment,
+        output_file=bat_script,
+    )
     gen.to_file()
 
     # Create the runner script that calls the generated .bat script
     runner_bat = tmp_path / "runner.bat"
-    runner_bat.write_text("@echo off\n" f"call {bat_script}\n" "echo VAR1=%VAR1%\n" "echo VAR2=%VAR2%\n" "echo PATH=%PATH%\n")
+    runner_bat.write_text(f"@echo off\ncall {bat_script}\necho VAR1=%VAR1%\necho VAR2=%VAR2%\necho PATH=%PATH%\n")
 
     process = SubprocessExecutor(["cmd.exe", "/c", str(runner_bat)], capture_output=True, print_output=False).execute(handle_errors=False)
 
@@ -57,9 +67,13 @@ def test_bat_setup_script_integration(tmp_path: Path, sample_environment: Dict[s
     assert f"PATH={tmp_path.joinpath('dirA')}" in process.stdout
 
 
-def test_ps1_setup_script(tmp_path: Path, sample_environment: Dict[str, str], sample_install_dirs: List[Path]) -> None:
+def test_ps1_setup_script(tmp_path: Path, sample_environment: dict[str, str], sample_install_dirs: list[Path]) -> None:
     output_file = tmp_path / "setup_env.ps1"
-    generator = Ps1EnvSetupScriptGenerator(install_dirs=sample_install_dirs, environment=sample_environment, output_file=output_file)
+    generator = Ps1EnvSetupScriptGenerator(
+        install_dirs=sample_install_dirs,
+        environment=sample_environment,
+        output_file=output_file,
+    )
 
     generator.to_file()
     content = output_file.read_text("utf-8")
@@ -75,17 +89,24 @@ def test_ps1_setup_script(tmp_path: Path, sample_environment: Dict[str, str], sa
 
 
 @pytest.mark.skipif(platform.system().lower() != "windows", reason="Requires Windows")
-def test_ps1_setup_script_integration(tmp_path: Path, sample_environment: Dict[str, str], sample_install_dirs: List[Path]) -> None:
+def test_ps1_setup_script_integration(tmp_path: Path, sample_environment: dict[str, str], sample_install_dirs: list[Path]) -> None:
     ps1_script = tmp_path / "setup_env.ps1"
-    gen = Ps1EnvSetupScriptGenerator(install_dirs=sample_install_dirs, environment=sample_environment, output_file=ps1_script)
+    gen = Ps1EnvSetupScriptGenerator(
+        install_dirs=sample_install_dirs,
+        environment=sample_environment,
+        output_file=ps1_script,
+    )
     gen.to_file()
 
     runner_ps1 = tmp_path / "runner.ps1"
-    runner_ps1.write_text(f". .\\{ps1_script.name}\n" 'Write-Host "VAR1=$env:VAR1"\n' 'Write-Host "VAR2=$env:VAR2"\n' 'Write-Host "PATH=$env:PATH"\n')
+    runner_ps1.write_text(f'. .\\{ps1_script.name}\nWrite-Host "VAR1=$env:VAR1"\nWrite-Host "VAR2=$env:VAR2"\nWrite-Host "PATH=$env:PATH"\n')
 
-    process = SubprocessExecutor(["powershell.exe", "-ExecutionPolicy", "Bypass", "-File", str(runner_ps1)], capture_output=True, print_output=False, cwd=tmp_path).execute(
-        handle_errors=False
-    )
+    process = SubprocessExecutor(
+        ["powershell.exe", "-ExecutionPolicy", "Bypass", "-File", str(runner_ps1)],
+        capture_output=True,
+        print_output=False,
+        cwd=tmp_path,
+    ).execute(handle_errors=False)
 
     assert process and process.returncode == 0
     assert "VAR1=value1" in process.stdout

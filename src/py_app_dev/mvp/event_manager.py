@@ -1,5 +1,6 @@
+from collections.abc import Callable
 from enum import Enum
-from typing import Any, Callable, Dict, List
+from typing import Any
 
 EventCallback = Callable[..., None]
 EventTrigger = Callable[..., None]
@@ -19,7 +20,7 @@ class EventManager:
     """
 
     def __init__(self) -> None:
-        self._events: Dict[EventID, List[EventCallback]] = {}
+        self._events: dict[EventID, list[EventCallback]] = {}
 
     def create_event_trigger(self, event_id: EventID) -> EventTrigger:
         """Creates a lambda function that can be used to trigger a specific event."""

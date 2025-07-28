@@ -1,7 +1,6 @@
 import json
 import os
 from pathlib import Path
-from typing import List, Optional
 
 import pytest
 
@@ -11,8 +10,8 @@ from py_app_dev.core.runnable import Executor, RunInfoStatus, Runnable
 class MyRunnable(Runnable):
     def __init__(
         self,
-        inputs: Optional[List[Path]] = None,
-        outputs: Optional[List[Path]] = None,
+        inputs: list[Path] | None = None,
+        outputs: list[Path] | None = None,
         return_code: int = 0,
         needs_dependency_management: bool = True,
     ) -> None:
@@ -27,10 +26,10 @@ class MyRunnable(Runnable):
     def run(self) -> int:
         return self._return_code
 
-    def get_inputs(self) -> List[Path]:
+    def get_inputs(self) -> list[Path]:
         return self._inputs
 
-    def get_outputs(self) -> List[Path]:
+    def get_outputs(self) -> list[Path]:
         return self._outputs
 
 
@@ -152,12 +151,12 @@ def test_config_changed(executor: Executor, tmp_path: Path) -> None:
         def __init__(
             self,
             config: dict[str, str],
-            inputs: Optional[List[Path]] = None,
+            inputs: list[Path] | None = None,
         ) -> None:
             super().__init__(inputs=inputs)
             self._config = config
 
-        def get_config(self) -> Optional[dict[str, str]]:
+        def get_config(self) -> dict[str, str] | None:
             return self._config
 
     runnable = ConfigurableRunnable(config={"key": "value"}, inputs=[input_path])
@@ -180,12 +179,12 @@ def test_config_stored(executor: Executor, tmp_path: Path) -> None:
         def __init__(
             self,
             config: dict[str, str],
-            inputs: Optional[List[Path]] = None,
+            inputs: list[Path] | None = None,
         ) -> None:
             super().__init__(inputs=inputs)
             self._config = config
 
-        def get_config(self) -> Optional[dict[str, str]]:
+        def get_config(self) -> dict[str, str] | None:
             return self._config
 
     config = {"key": "value"}

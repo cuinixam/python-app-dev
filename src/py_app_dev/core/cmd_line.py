@@ -1,7 +1,7 @@
 import dataclasses
 from abc import ABC, abstractmethod
 from argparse import ArgumentError, ArgumentParser, Namespace
-from typing import Any, Dict, List, Type, Union, get_args
+from typing import Any, Union, get_args
 
 from .docs_utils import fulfills
 from .logging import logger
@@ -34,14 +34,14 @@ class Command(ABC):
 class CommandLineHandler:
     """Handles the command line interface."""
 
-    def __init__(self, commands: Dict[str, Command], parser: ArgumentParser) -> None:
+    def __init__(self, commands: dict[str, Command], parser: ArgumentParser) -> None:
         super().__init__()
         self.commands = commands
         self.parser = parser
         self.logger = logger.bind()
 
     @fulfills("REQ-CMDLINE_COMMAND_ARGS-0.0.1", "REQ-CMDLINE_COMMAND_EXEC-0.0.1")
-    def run(self, args: List[str]) -> int:
+    def run(self, args: list[str]) -> int:
         try:
             parsed_args = self.parser.parse_args(args)
         except ArgumentError as e:
@@ -64,14 +64,14 @@ class CommandLineHandlerBuilder:
     """Builds a command line handler."""
 
     def __init__(self, parser: ArgumentParser) -> None:
-        self.commands: Dict[str, Command] = {}
+        self.commands: dict[str, Command] = {}
         self.parser = parser
         self.subparsers = self.parser.add_subparsers(title="Commands", dest="command")
 
     def create(self) -> CommandLineHandler:
         return CommandLineHandler(self.commands, self.parser)
 
-    def add_commands(self, commands: List[Command]) -> "CommandLineHandlerBuilder":
+    def add_commands(self, commands: list[Command]) -> "CommandLineHandlerBuilder":
         for command in commands:
             self.add_command(command)
         return self
@@ -108,7 +108,7 @@ def get_actual_type(some_type: Any) -> Any:
 
 def register_arguments_for_config_dataclass(
     parser: ArgumentParser,
-    config_dataclass: Type,  # type: ignore
+    config_dataclass: type,
 ) -> None:
     """
     Helper function to register arguments for a dataclass.

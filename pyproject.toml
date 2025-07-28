@@ -1,135 +1,119 @@
-[tool.poetry]
+[build-system]
+requires = ["poetry-core>=2,<3"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
 name = "py-app-dev"
 version = "2.12.1"
 description = "My application development modules."
-authors = ["cuinixam <me@cuinixam.com>"]
-license = "MIT"
 readme = "README.md"
-repository = "https://github.com/cuinixam/python-app-dev"
-documentation = "https://python-app-dev.readthedocs.io"
+license = { text = "MIT" }
+authors = [
+  { name = "cuinixam", email = "cuinixam@me.com" },
+]
+requires-python = "<4.0,>=3.10"
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
-    "Intended Audience :: Developers",
-    "Natural Language :: English",
-    "Operating System :: OS Independent",
-    "Topic :: Software Development :: Libraries",
-]
-packages = [
-    { include = "py_app_dev", from = "src" },
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Developers",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Topic :: Software Development :: Libraries",
 ]
 
-[tool.poetry.urls]
-"Bug Tracker" = "https://github.com/cuinixam/python-app-dev/issues"
-"Changelog" = "https://github.com/cuinixam/python-app-dev/blob/main/CHANGELOG.md"
-
-[tool.poetry.dependencies]
-python = "^3.10"
-loguru = "^0.7"
-mashumaro = "^3.15"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3"
-pytest-cov = "^6.0"
-ruff = "^0.9"
-pre-commit = "^4.0"
-
-[tool.poetry.group.docs.dependencies]
-myst-parser = ">=0.16"
-sphinx = ">=4.0"
-sphinxcontrib-mermaid = "^0.8.1"
-mlx-traceability = "^10.0.0"
-sphinx-copybutton = "^0.5.2"
-sphinx-new-tab-link = "^0.2.2"
-sphinx-book-theme = "^1.1.2"
-sphinx-design = "^0.5.0"
-
-[tool.semantic_release]
-version_toml = ["pyproject.toml:tool.poetry.version"]
-version_variables = [
-    "src/py_app_dev/__init__.py:__version__",
-    "docs/conf.py:release",
+dependencies = [
+    "mashumaro<4.0,>=3.5",
+    "loguru<1.0,>=0.7",
 ]
-build_command = "pip install poetry && poetry build"
+urls."Bug Tracker" = "https://github.com/cuinixam/py-app-dev/issues"
+urls.Changelog = "https://github.com/cuinixam/py-app-dev/blob/main/CHANGELOG.md"
+urls.repository = "https://github.com/cuinixam/py-app-dev"
 
-[tool.semantic_release.changelog]
-exclude_commit_patterns = [
-    "chore*",
-    "ci*",
+[dependency-groups]
+dev = [
+  "pytest<9.0,>=8.3",
+  "pytest-cov<7.0,>=6.0",
+  "pre-commit<5.0,>=4.0",
+  "ruff<1.0,>=0.9",
+  "pypeline-runner<2.0,>=1.0",
+  "wrapt",
+  # docs
+  "myst-parser>=4.0,<5",
+  "sphinx>=8.0,<9",
+  "sphinxcontrib-mermaid>=1.0,<2",
+  "mlx-traceability>=11.0,<12",
+  "sphinx-copybutton>=0,<1",
+  "sphinx-new-tab-link>=0,<1",
+  "sphinx-book-theme>=1.1,<2",
+  "sphinx-design>=0,<1"
 ]
 
-[tool.semantic_release.changelog.environment]
-keep_trailing_newline = true
-
-[tool.semantic_release.branches.main]
-match = "main"
-
-[tool.semantic_release.branches.noop]
-match = "(?!main$)"
-prerelease = true
+[tool.ruff]
+target-version = "py39"
+line-length = 180
+lint.select = [
+  "B",   # flake8-bugbear
+  "D",   # flake8-docstrings
+  "C4",  # flake8-comprehensions
+  "S",   # flake8-bandit
+  "F",   # pyflake
+  "E",   # pycodestyle
+  "W",   # pycodestyle
+  "UP",  # pyupgrade
+  "I",   # isort
+  "RUF", # ruff specific
+]
+lint.ignore = [
+  "D203", # 1 blank line required before class docstring
+  "D212", # Multi-line docstring summary should start at the first line
+  "D100", # Missing docstring in public module
+  "D101", # Missing docstring in public class
+  "D102", # Missing docstring in public method
+  "D103", # Missing docstring in public function
+  "D104", # Missing docstring in public package
+  "D105", # Missing docstring in magic method
+  "D106", # Missing docstring in public nested class
+  "D107", # Missing docstring in `__init__`
+  "D401", # First line of docstring should be in imperative mood
+]
+lint.per-file-ignores."conftest.py" = [ "D100" ]
+lint.per-file-ignores."setup.py" = [ "D100" ]
+lint.per-file-ignores."tests/**/*" = [
+  "D100",
+  "D101",
+  "D102",
+  "D103",
+  "D104",
+  "S101",
+]
+lint.isort.known-first-party = [ "py_app_dev", "tests" ]
 
 [tool.pytest.ini_options]
-addopts = "-vv -Wdefault --cov=py_app_dev --cov-report=term-missing:skip-covered -s"
-pythonpath = ["src"]
+addopts = """\
+    -v
+    -Wdefault
+    --cov=py_app_dev
+    --cov-report=term
+    --cov-report=xml
+    """
+pythonpath = [ "src" ]
 
 [tool.coverage.run]
 branch = true
 
+[tool.coverage.paths]
+source = [
+  "src",
+  ".tox/**/site-packages",
+]
+
 [tool.coverage.report]
 exclude_lines = [
-    "pragma: no cover",
-    "@overload",
-    "if TYPE_CHECKING",
-    "raise NotImplementedError",
-    'if __name__ == "__main__":',
+  "pragma: no cover",
+  "@overload",
+  "if TYPE_CHECKING",
+  "raise NotImplementedError",
+  'if __name__ == "__main__":',
 ]
-
-[tool.ruff]
-target-version = "py38"
-line-length = 180
-lint.ignore = [
-    "D203", # 1 blank line required before class docstring
-    "D212", # Multi-line docstring summary should start at the first line
-    "D100", # Missing docstring in public module
-    "D101", # Missing docstring in public class
-    "D102", # Missing docstring in public method
-    "D103", # Missing docstring in public function
-    "D104", # Missing docstring in public package
-    "D105", # Missing docstring in magic method
-    "D107", # Missing docstring in `__init__`
-    "D401", # First line of docstring should be in imperative mood
-    "D412", # No blank lines allowed between a section header and its content
-]
-lint.select = [
-    "B",   # flake8-bugbear
-    "D",   # flake8-docstrings
-    "C4",  # flake8-comprehensions
-    "S",   # flake8-bandit
-    "F",   # pyflake
-    "E",   # pycodestyle
-    "W",   # pycodestyle
-    "UP",  # pyupgrade
-    "I",   # isort
-    "RUF", # ruff specific
-]
-exclude = [
-    "bootstrap.py"
-]
-
-[tool.ruff.lint.per-file-ignores]
-"tests/**/*" = [
-    "D100",
-    "D101",
-    "D102",
-    "D103",
-    "D104",
-    "S101",
-]
-"setup.py" = ["D100"]
-"conftest.py" = ["D100"]
-"docs/conf.py" = ["D100"]
-
-[tool.ruff.lint.isort]
-known-first-party = ["py_app_dev", "tests"]
 
 [tool.mypy]
 check_untyped_defs = true
@@ -142,18 +126,43 @@ show_error_codes = true
 warn_unreachable = true
 warn_unused_ignores = true
 exclude = [
-    'docs/.*',
-    'setup.py',
+  'setup.py',
 ]
 
 [[tool.mypy.overrides]]
 module = "tests.*"
 allow_untyped_defs = true
 
-[[tool.mypy.overrides]]
-module = "docs.*"
-ignore_errors = true
+[tool.semantic_release]
+version_toml = [ "pyproject.toml:project.version" ]
+version_variables = [
+  "src/py_app_dev/__init__.py:__version__",
+]
+build_command = """
+pip install uv
+uv lock
+git add uv.lock
+uv build
+"""
 
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+[tool.semantic_release.changelog]
+exclude_commit_patterns = [
+  '''chore(?:\([^)]*?\))?: .+''',
+  '''ci(?:\([^)]*?\))?: .+''',
+  '''refactor(?:\([^)]*?\))?: .+''',
+  '''style(?:\([^)]*?\))?: .+''',
+  '''test(?:\([^)]*?\))?: .+''',
+  '''build\((?!deps\): .+)''',
+  '''Merged? .*''',
+  '''Initial [Cc]ommit.*''', # codespell:ignore
+]
+
+[tool.semantic_release.changelog.environment]
+keep_trailing_newline = true
+
+[tool.semantic_release.branches.main]
+match = "main"
+
+[tool.semantic_release.branches.noop]
+match = "(?!main$)"
+prerelease = true

@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 import pytest
 
@@ -16,7 +16,7 @@ from py_app_dev.core.docs_utils import validates
 
 
 class MockCommand(Command):
-    def __init__(self, name: str, description: str, arguments: List[str]) -> None:
+    def __init__(self, name: str, description: str, arguments: list[str]) -> None:
         super().__init__(name, description)
         self.arguments = arguments
         self.called_with_args = Namespace()
@@ -74,10 +74,8 @@ def test_duplicate_commands():
 class MyConfigDataclass:
     my_first_arg: Path = field(metadata={"help": "Some help for arg1."})
     arg: str = field(default="value1", metadata={"help": "Some help for arg1."})
-    opt_arg: Optional[str] = field(
-        default=None, metadata={"help": "Some help for arg1."}
-    )
-    opt_arg_bool: Optional[bool] = field(
+    opt_arg: str | None = field(default=None, metadata={"help": "Some help for arg1."})
+    opt_arg_bool: bool | None = field(
         default=False,
         metadata={
             "help": "Some help for arg1.",
@@ -89,7 +87,7 @@ class MyConfigDataclass:
 def test_is_type_optional():
     assert is_type_optional(Optional[str])
     assert not is_type_optional(str)
-    assert is_type_optional(Union[Optional[Path], str])
+    assert is_type_optional(Union[Path | None, str])
     assert not is_type_optional(Union[Path, str])
 
 
@@ -120,7 +118,7 @@ def test_register_arguments_with_action_store_true():
 @dataclass
 class ClassWithOptionalPath:
     model_file: Path = field(metadata={"help": "Model file."})
-    config_file: Optional[Path] = field(default=None, metadata={"help": "Config file."})
+    config_file: Path | None = field(default=None, metadata={"help": "Config file."})
 
 
 def test_register_optional_path_arguments():
@@ -142,11 +140,9 @@ def test_register_optional_path_arguments():
 
 @dataclass
 class ClassWithListArgument:
-    my_paths: List[Path] = field(metadata={"help": "List of paths"})
+    my_paths: list[Path] = field(metadata={"help": "List of paths"})
     # This is an optional list
-    my_strings: List[str] = field(
-        default_factory=list, metadata={"help": "List of strings"}
-    )
+    my_strings: list[str] = field(default_factory=list, metadata={"help": "List of strings"})
 
 
 def test_register_list_argument():
@@ -196,13 +192,7 @@ class ClassWithCustomDeserialize:
         }
     )
     my_int: int
-    my_enum: Optional[MyEnum] = field(
-        metadata={
-            "deserialize": lambda in_str: getattr(MyEnum, str(in_str).upper())
-            if in_str
-            else None
-        }
-    )
+    my_enum: MyEnum | None = field(metadata={"deserialize": lambda in_str: getattr(MyEnum, str(in_str).upper()) if in_str else None})
 
 
 def test_register_arguments_with_custom_deserialize():
@@ -210,7 +200,5 @@ def test_register_arguments_with_custom_deserialize():
     register_arguments_for_config_dataclass(parser, ClassWithCustomDeserialize)
     args = parser.parse_args(["--my-hex-value", "0x01", "--my-int", "13"])
     assert vars(args) == {"my_hex_value": 1, "my_int": 13, "my_enum": None}
-    args = parser.parse_args(
-        ["--my-hex-value", "0x01", "--my-int", "13", "--my-enum", "one"]
-    )
+    args = parser.parse_args(["--my-hex-value", "0x01", "--my-int", "13", "--my-enum", "one"])
     assert vars(args) == {"my_hex_value": 1, "my_int": 13, "my_enum": MyEnum.ONE}

@@ -2,7 +2,6 @@ import json
 from abc import ABC
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 from mashumaro import DataClassDictMixin
 
@@ -17,7 +16,7 @@ class ExecutionEnvironment:
 
 
 class PipelineStep(Runnable, ABC):
-    def __init__(self, environment: ExecutionEnvironment, group_name: Optional[str]) -> None:
+    def __init__(self, environment: ExecutionEnvironment, group_name: str | None) -> None:
         super().__init__()
         self.environment = environment
         self.output_dir = self.environment.output_dir / group_name if group_name else self.environment.output_dir

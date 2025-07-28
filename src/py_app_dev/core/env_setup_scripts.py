@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Dict, List
 
 from .logging import logger
 
@@ -8,7 +7,7 @@ from .logging import logger
 class EnvSetupScriptGenerator(ABC):
     """Abstract base class for generating windows environment setup scripts."""
 
-    def __init__(self, install_dirs: List[Path], environment: Dict[str, str], output_file: Path):
+    def __init__(self, install_dirs: list[Path], environment: dict[str, str], output_file: Path):
         self.logger = logger.bind()
         self.install_dirs = install_dirs
         self.environment = environment

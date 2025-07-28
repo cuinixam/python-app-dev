@@ -43,13 +43,13 @@ Ready to contribute? Here's how to set yourself up for local development.
 2. Clone your fork locally:
 
    ```shell
-   $ git clone git@github.com:your_name_here/python-app-dev.git
+   $ git clone git@github.com:your_name_here/py-app-dev.git
    ```
 
-3. Install the project dependencies with [Poetry](https://python-poetry.org):
+3. Install the project dependencies with [uv](https://docs.astral.sh/uv/):
 
    ```shell
-   $ poetry install
+   $ uv sync
    ```
 
 4. Create a branch for local development:
@@ -63,7 +63,7 @@ Ready to contribute? Here's how to set yourself up for local development.
 5. When you're done making changes, check that your changes pass our tests:
 
    ```shell
-   $ poetry run pytest
+   $ uv run pytest
    ```
 
 6. Linting is done through [pre-commit](https://pre-commit.com). Provided you have the tool installed globally, you can run them all as one-off:
@@ -114,4 +114,4 @@ $ pytest tests
 
 The deployment should be automated and can be triggered from the Semantic Release workflow in GitHub. The next version will be based on [the commit logs](https://python-semantic-release.readthedocs.io/en/latest/commit-log-parsing.html#commit-log-parsing). This is done by [python-semantic-release](https://python-semantic-release.readthedocs.io/en/latest/index.html) via a GitHub action.
 
-[gh-issues]: https://github.com/cuinixam/python-app-dev/issues
+[gh-issues]: https://github.com/cuinixam/py-app-dev/issues

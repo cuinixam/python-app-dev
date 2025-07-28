@@ -1,5 +1,6 @@
+from collections import OrderedDict
 from pathlib import Path
-from typing import Any, List, OrderedDict
+from typing import Any
 
 import pytest
 
@@ -28,10 +29,10 @@ class MyCustomPipelineStep:
     def run(self) -> int:
         return 0
 
-    def get_dependencies(self) -> List[Path]:
+    def get_dependencies(self) -> list[Path]:
         return []
 
-    def get_outputs(self) -> List[Path]:
+    def get_outputs(self) -> list[Path]:
         return []
 
 

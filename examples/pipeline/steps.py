@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List
 
 from main import ExecutionEnvironment, PipelineStep
 
@@ -14,18 +13,16 @@ class MyBaseStep(PipelineStep):
 
 class MyInstallStep(MyBaseStep):
     def run(self) -> int:
-        self.logger.info(
-            f"Running {self.__class__.__name__} step. Output dir: {self.output_dir}"
-        )
+        self.logger.info(f"Running {self.__class__.__name__} step. Output dir: {self.output_dir}")
         return 0
 
     def get_name(self) -> str:
         return self.__class__.__name__
 
-    def get_inputs(self) -> List[Path]:
+    def get_inputs(self) -> list[Path]:
         return []
 
-    def get_outputs(self) -> List[Path]:
+    def get_outputs(self) -> list[Path]:
         return []
 
 
@@ -35,17 +32,15 @@ class MyRunStep(MyBaseStep):
         return self.output_dir / "output.txt"
 
     def run(self) -> int:
-        self.logger.info(
-            f"Running {self.__class__.__name__} step. Output dir: {self.output_dir}"
-        )
+        self.logger.info(f"Running {self.__class__.__name__} step. Output dir: {self.output_dir}")
         self.output_file.write_text("Hello, World!")
         return 0
 
     def get_name(self) -> str:
         return self.__class__.__name__
 
-    def get_inputs(self) -> List[Path]:
+    def get_inputs(self) -> list[Path]:
         return []
 
-    def get_outputs(self) -> List[Path]:
+    def get_outputs(self) -> list[Path]:
         return [self.output_file]
