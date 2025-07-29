@@ -1145,7 +1145,7 @@ wheels = [
 
 [[package]]
 name = "py-app-dev"
-version = "2.12.1"
+version = "2.13.0"
 source = { editable = "." }
 dependencies = [
     { name = "loguru" },
