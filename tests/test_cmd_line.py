@@ -74,7 +74,7 @@ def test_duplicate_commands():
 class MyConfigDataclass:
     my_first_arg: Path = field(metadata={"help": "Some help for arg1."})
     arg: str = field(default="value1", metadata={"help": "Some help for arg1."})
-    opt_arg: str | None = field(default=None, metadata={"help": "Some help for arg1."})
+    opt_arg: Optional[str] = field(default=None, metadata={"help": "Some help for arg1."})
     opt_arg_bool: bool | None = field(
         default=False,
         metadata={
@@ -88,6 +88,10 @@ def test_is_type_optional():
     assert is_type_optional(Optional[str])
     assert not is_type_optional(str)
     assert is_type_optional(Union[Path | None, str])
+    # Test modern union syntax (Python 3.10+)
+    assert is_type_optional(Path | None)
+    assert is_type_optional(str | None)
+    assert not is_type_optional(Path | str)  # Union without None should not be optional
     assert not is_type_optional(Union[Path, str])
 
 
@@ -135,6 +139,45 @@ def test_register_optional_path_arguments():
     assert vars(args) == {
         "model_file": Path("my/path"),
         "config_file": Path("some/config/path"),
+    }
+
+
+@dataclass
+class ClassWithModernUnionTypes:
+    """Test class with various modern union syntax optional fields."""
+
+    required_path: Path = field(metadata={"help": "Required path."})
+    optional_path: Path | None = field(default=None, metadata={"help": "Optional path."})
+    optional_str: str | None = field(default=None, metadata={"help": "Optional string."})
+    optional_int: int | None = field(default=None, metadata={"help": "Optional integer."})
+    optional_bool: bool | None = field(default=None, metadata={"help": "Optional boolean."})
+
+
+def test_register_modern_union_optional_arguments():
+    """Test that modern union syntax (T | None) works correctly."""
+    parser = ArgumentParser()
+    register_arguments_for_config_dataclass(parser, ClassWithModernUnionTypes)
+
+    # Test with all arguments provided
+    args = parser.parse_args(
+        ["--required-path", "required/path", "--optional-path", "optional/path", "--optional-str", "test_string", "--optional-int", "42", "--optional-bool", "true"]
+    )
+    assert vars(args) == {
+        "required_path": Path("required/path"),
+        "optional_path": Path("optional/path"),
+        "optional_str": "test_string",
+        "optional_int": 42,
+        "optional_bool": True,
+    }
+
+    # Test with only required arguments
+    args = parser.parse_args(["--required-path", "required/path"])
+    assert vars(args) == {
+        "required_path": Path("required/path"),
+        "optional_path": None,
+        "optional_str": None,
+        "optional_int": None,
+        "optional_bool": None,
     }
 
 

@@ -1,4 +1,5 @@
 import dataclasses
+import types
 from abc import ABC, abstractmethod
 from argparse import ArgumentError, ArgumentParser, Namespace
 from typing import Any, Union, get_args
@@ -87,7 +88,13 @@ class CommandLineHandlerBuilder:
 
 
 def is_type_optional(some_type: Any) -> bool:
-    return hasattr(some_type, "__origin__") and some_type.__origin__ is Union and type(None) in some_type.__args__
+    # Handle old typing.Union syntax (Optional[T] or Union[T, None])
+    if hasattr(some_type, "__origin__") and some_type.__origin__ is Union and type(None) in some_type.__args__:
+        return True
+    # Handle new union syntax (T | None) - Python 3.10+
+    if isinstance(some_type, types.UnionType) and type(None) in some_type.__args__:
+        return True
+    return False
 
 
 def is_type_list(some_type: Any) -> bool:
