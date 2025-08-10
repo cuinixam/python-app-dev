@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v2.14.0 (2025-08-10)
+
+### Features
+
+- Execute runnable if new input files are detected
+  ([`eaa2dbd`](https://github.com/cuinixam/python-app-dev/commit/eaa2dbd8699bd998be905362b48d8293691baac1))
+
+
 ## v2.13.0 (2025-07-29)
 
 ### Features
