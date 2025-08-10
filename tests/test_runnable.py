@@ -35,20 +35,17 @@ class MyRunnable(Runnable):
 
 @pytest.fixture
 def executor(tmp_path: Path) -> Executor:
-    """Fixture for creating an Executor with a cache directory."""
     cache_dir = tmp_path / "cache"
     cache_dir.mkdir()
     return Executor(cache_dir=cache_dir)
 
 
 def test_no_previous_info(executor: Executor) -> None:
-    """Test that Executor correctly detects that a runnable has not been executed before."""
     runnable = MyRunnable()
     assert executor.previous_run_info_matches(runnable) == RunInfoStatus.NO_INFO
 
 
 def test_previous_info_matches(executor: Executor, tmp_path: Path) -> None:
-    """Test that Executor correctly skips execution when previous info matches."""
     input_path = tmp_path / "input.txt"
     output_path = tmp_path / "output.txt"
     input_path.write_text("input")
@@ -61,7 +58,6 @@ def test_previous_info_matches(executor: Executor, tmp_path: Path) -> None:
 
 
 def test_file_changed(executor: Executor, tmp_path: Path) -> None:
-    """Test that Executor correctly detects when a file has changed."""
     input_path = tmp_path / "input.txt"
     input_path.write_text("input")
     runnable = MyRunnable(inputs=[input_path])
@@ -71,7 +67,6 @@ def test_file_changed(executor: Executor, tmp_path: Path) -> None:
 
 
 def test_file_removed(executor: Executor, tmp_path: Path) -> None:
-    """Test that Executor correctly detects when a file has been removed."""
     output_path = tmp_path / "output.txt"
     output_path.write_text("output")
     runnable = MyRunnable(outputs=[output_path])
@@ -81,7 +76,6 @@ def test_file_removed(executor: Executor, tmp_path: Path) -> None:
 
 
 def test_directory_exists(executor: Executor, tmp_path: Path) -> None:
-    """Test that Executor correctly handles existing directories."""
     input_dir = tmp_path / "input_dir"
     output_dir = tmp_path / "output_dir"
     input_dir.mkdir()
@@ -92,7 +86,6 @@ def test_directory_exists(executor: Executor, tmp_path: Path) -> None:
 
 
 def test_directory_removed(executor: Executor, tmp_path: Path) -> None:
-    """Test that Executor correctly detects when a directory has been removed."""
     input_dir = tmp_path / "input_dir"
     output_dir = tmp_path / "output_dir"
     input_dir.mkdir()
@@ -104,7 +97,6 @@ def test_directory_removed(executor: Executor, tmp_path: Path) -> None:
 
 
 def test_mixed_files_and_directories(executor: Executor, tmp_path: Path) -> None:
-    """Test that Executor correctly handles a mix of files and directories."""
     input_file = tmp_path / "input.txt"
     input_dir = tmp_path / "input_dir"
     output_file = tmp_path / "output.txt"
@@ -119,14 +111,12 @@ def test_mixed_files_and_directories(executor: Executor, tmp_path: Path) -> None
 
 
 def test_no_inputs_and_no_outputs(executor: Executor) -> None:
-    """Test that Executor correctly handles a runnable with no inputs and no outputs."""
     runnable = MyRunnable()
     executor.execute(runnable)
     assert executor.previous_run_info_matches(runnable) == RunInfoStatus.NOTHING_TO_CHECK
 
 
 def test_dry_run(executor: Executor) -> None:
-    """Test that Executor does not execute the run method when dry_run is True."""
     runnable = MyRunnable(return_code=1)
     executor.dry_run = True
     assert executor.execute(runnable) == 0
@@ -135,29 +125,28 @@ def test_dry_run(executor: Executor) -> None:
 
 
 def test_no_dependency_management(executor: Executor) -> None:
-    """Test that Executor executes runnables without dependency management directly."""
     runnable = MyRunnable(needs_dependency_management=False, return_code=2)
     assert executor.execute(runnable) == 2
     # Ensure it doesn't store or check run info
     assert executor.previous_run_info_matches(runnable) == RunInfoStatus.NO_INFO
 
 
+class ConfigurableRunnable(MyRunnable):
+    def __init__(
+        self,
+        config: dict[str, str],
+        inputs: list[Path] | None = None,
+    ) -> None:
+        super().__init__(inputs=inputs)
+        self._config = config
+
+    def get_config(self) -> dict[str, str] | None:
+        return self._config
+
+
 def test_config_changed(executor: Executor, tmp_path: Path) -> None:
-    """Test that Executor detects when the configuration has changed."""
     input_path = tmp_path / "input.txt"
     input_path.write_text("input")
-
-    class ConfigurableRunnable(MyRunnable):
-        def __init__(
-            self,
-            config: dict[str, str],
-            inputs: list[Path] | None = None,
-        ) -> None:
-            super().__init__(inputs=inputs)
-            self._config = config
-
-        def get_config(self) -> dict[str, str] | None:
-            return self._config
 
     runnable = ConfigurableRunnable(config={"key": "value"}, inputs=[input_path])
     executor.execute(runnable)
@@ -171,21 +160,8 @@ def test_config_changed(executor: Executor, tmp_path: Path) -> None:
 
 
 def test_config_stored(executor: Executor, tmp_path: Path) -> None:
-    """Test that Executor stores the configuration alongside inputs and outputs."""
     input_path = tmp_path / "input.txt"
     input_path.write_text("input")
-
-    class ConfigurableRunnable(MyRunnable):
-        def __init__(
-            self,
-            config: dict[str, str],
-            inputs: list[Path] | None = None,
-        ) -> None:
-            super().__init__(inputs=inputs)
-            self._config = config
-
-        def get_config(self) -> dict[str, str] | None:
-            return self._config
 
     config = {"key": "value"}
     runnable = ConfigurableRunnable(config=config, inputs=[input_path])
@@ -199,7 +175,6 @@ def test_config_stored(executor: Executor, tmp_path: Path) -> None:
 
 
 def test_config_not_stored_if_none(executor: Executor, tmp_path: Path) -> None:
-    """Test that Executor does not store a config if the runnable has no config."""
     input_path = tmp_path / "input.txt"
     input_path.write_text("input")
 
@@ -211,3 +186,64 @@ def test_config_not_stored_if_none(executor: Executor, tmp_path: Path) -> None:
     with run_info_path.open() as f:
         run_info = json.load(f)
     assert "config" not in run_info
+
+
+class DynamicInputRunnable(MyRunnable):
+    def __init__(self, input_dir: Path) -> None:
+        super().__init__()
+        self.input_dir = input_dir
+
+    def get_inputs(self) -> list[Path]:
+        # Simulates a runnable that parses all .yaml files from a directory
+        return list(self.input_dir.glob("*.yaml"))
+
+
+def test_new_input_files_trigger_execution(executor: Executor, tmp_path: Path) -> None:
+    input_dir = tmp_path / "configs"
+    input_dir.mkdir()
+
+    # Create initial yaml file
+    yaml_file1 = input_dir / "config1.yaml"
+    yaml_file1.write_text("config: value1")
+
+    runnable = DynamicInputRunnable(input_dir)
+
+    # First execution should run (no previous info)
+    assert executor.previous_run_info_matches(runnable) == RunInfoStatus.NO_INFO
+    executor.execute(runnable)
+
+    # Second execution should be skipped (nothing changed)
+    assert executor.previous_run_info_matches(runnable) == RunInfoStatus.MATCH
+
+    # Create a new yaml file - this should trigger re-execution
+    yaml_file2 = input_dir / "config2.yaml"
+    yaml_file2.write_text("config: value2")
+
+    # This should detect the new input file and require re-execution
+    assert executor.previous_run_info_matches(runnable) == RunInfoStatus.INPUT_FILES_CHANGED
+
+
+def test_removed_input_files_trigger_execution(executor: Executor, tmp_path: Path) -> None:
+    input_dir = tmp_path / "configs"
+    input_dir.mkdir()
+
+    # Create initial yaml files
+    yaml_file1 = input_dir / "config1.yaml"
+    yaml_file1.write_text("config: value1")
+    yaml_file2 = input_dir / "config2.yaml"
+    yaml_file2.write_text("config: value2")
+
+    runnable = DynamicInputRunnable(input_dir)
+
+    # First execution should run (no previous info)
+    assert executor.previous_run_info_matches(runnable) == RunInfoStatus.NO_INFO
+    executor.execute(runnable)
+
+    # Second execution should be skipped (nothing changed)
+    assert executor.previous_run_info_matches(runnable) == RunInfoStatus.MATCH
+
+    # Remove one yaml file - this should trigger re-execution
+    yaml_file2.unlink()
+
+    # This should detect the missing input file and require re-execution
+    assert executor.previous_run_info_matches(runnable) == RunInfoStatus.INPUT_FILES_CHANGED

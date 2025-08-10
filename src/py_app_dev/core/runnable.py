@@ -42,6 +42,7 @@ class RunInfoStatus(Enum):
     NO_INFO = (True, "No previous execution info found.")
     FILE_NOT_FOUND = (True, "File not found.")
     FILE_CHANGED = (True, "File has changed.")
+    INPUT_FILES_CHANGED = (True, "Current input files have changed (added or removed).")
     NOTHING_TO_CHECK = (True, "Nothing to be checked. Assume it shall always run.")
     FORCED_RUN = (True, "Forced run. Ignore previous execution info.")
     CONFIG_CHANGED = (True, "Configuration has changed.")
@@ -121,6 +122,12 @@ class Executor:
         if "config" in previous_info:
             if current_config != previous_info["config"]:
                 return RunInfoStatus.CONFIG_CHANGED
+
+        # Check if the list of inputs has changed
+        current_inputs = {str(path) for path in runnable.get_inputs()}
+        previous_inputs = set(previous_info.get("inputs", {}).keys())
+        if current_inputs != previous_inputs:
+            return RunInfoStatus.INPUT_FILES_CHANGED
 
         # Check if there is anything to be checked
         if any(len(previous_info[file_type]) for file_type in ["inputs", "outputs"]):
