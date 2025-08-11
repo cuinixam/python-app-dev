@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v2.15.0 (2025-08-11)
+
+### Features
+
+- Make subprocess executor robust against invalid encoding and capturing output while printing
+  ([`6a0d5f0`](https://github.com/cuinixam/python-app-dev/commit/6a0d5f01db8f2e19ecca837084a31edfe523348b))
+
+
 ## v2.14.0 (2025-08-10)
 
 ### Features
