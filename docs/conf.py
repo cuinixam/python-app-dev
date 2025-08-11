@@ -66,9 +66,7 @@ traceability_render_relationship_per_item = True
 traceability_collapse_links = True
 
 # The suffix of source filenames.
-source_suffix = [
-    ".md",
-]
+source_suffix = [".md", ".rst"]
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]

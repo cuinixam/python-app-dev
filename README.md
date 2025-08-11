@@ -38,24 +38,47 @@
 
 My application development modules.
 
-## Installation
+## Start developing
 
-Install this via pip (or your favourite package manager):
+The project uses UV for dependencies management and packaging and the [pypeline](https://github.com/cuinixam/pypeline) for streamlining the development workflow.
+Use pipx (or your favorite package manager) to install the `pypeline` in an isolated environment:
 
-`pip install py-app-dev`
-
-## Usage
-
-Start by importing it:
-
-```python
-import py_app_dev
+```shell
+pipx install pypeline-runner
 ```
 
+To bootstrap the project and run all the steps configured in the `pypeline.yaml` file, execute the following command:
+
+```shell
+pypeline run
+```
+
+For those using [VS Code](https://code.visualstudio.com/) there are tasks defined for the most common commands:
+
+- run tests
+- run pre-commit checks (linters, formatters, etc.)
+- generate documentation
+
+See the `.vscode/tasks.json` for more details.
+
+## Committing changes
+
+This repository uses [commitlint](https://github.com/conventional-changelog/commitlint) for checking if the commit message meets the [conventional commit format](https://www.conventionalcommits.org/en).
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- prettier-ignore-start -->
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- markdownlint-disable -->
+<!-- markdownlint-enable -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+<!-- prettier-ignore-end -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
 
 ## Credits
-
-[![Copier](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/copier-org/copier/master/img/badge/badge-grayscale-inverted-border-orange.json)](https://github.com/copier-org/copier)
 
 This package was created with
 [Copier](https://copier.readthedocs.io/) and the
