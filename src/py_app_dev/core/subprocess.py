@@ -1,3 +1,4 @@
+import locale
 import shutil
 import subprocess  # nosec
 from pathlib import Path
@@ -59,9 +60,18 @@ class SubprocessExecutor:
             with subprocess.Popen(
                 args=self.command,
                 cwd=cwd_path,
+                # Combine both streams to stdout (when captured)
                 stdout=(subprocess.PIPE if self.capture_output else subprocess.DEVNULL),
                 stderr=(subprocess.STDOUT if self.capture_output else subprocess.DEVNULL),
+                # enables line buffering, line is flushed after each \n
+                bufsize=1,
                 text=True,
+                # every new line is a \n
+                universal_newlines=True,
+                # decode bytes to str using current locale/system encoding
+                encoding=locale.getpreferredencoding(False),
+                # replace unknown characters with �
+                errors="replace",
                 env=self.env,
                 shell=self.shell,
             ) as process:  # nosec
@@ -69,6 +79,7 @@ class SubprocessExecutor:
                     if self.print_output:
                         for line in iter(process.stdout.readline, ""):
                             self.logger.info(line.strip())
+                            stdout += line
                         process.wait()
                     else:
                         stdout, stderr = process.communicate()
