@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v2.16.0 (2025-09-06)
+
+### Features
+
+- Add find helper methods
+  ([`6b487de`](https://github.com/cuinixam/python-app-dev/commit/6b487deb755650c6e9e94e317e4e9b16163478f3))
+
+
 ## v2.15.0 (2025-08-11)
 
 ### Features
