@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v2.17.0 (2025-09-14)
+
+### Features
+
+- Support case insensitive scoop manifest data
+  ([`86d56a5`](https://github.com/cuinixam/python-app-dev/commit/86d56a5167efa2699b3874cee8f49a38153ec982))
+
+
 ## v2.16.0 (2025-09-06)
 
 ### Features
