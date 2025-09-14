@@ -38,7 +38,6 @@ dev = [
   "wrapt",
   # docs
   "myst-parser>=4.0,<5",
-  "sphinx>=8.0,<9",
   "sphinxcontrib-mermaid>=1.0,<2",
   "mlx-traceability>=11.0,<12",
   "sphinx-copybutton>=0,<1",

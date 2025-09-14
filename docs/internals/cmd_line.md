@@ -41,16 +41,14 @@
 
 ## Implementation
 
-```{eval-rst}
-.. automodule:: py_app_dev.core.cmd_line
+```{automodule} py_app_dev.core.cmd_line
    :members:
    :show-inheritance:
 ```
 
 ## Testing
 
-```{eval-rst}
-.. automodule:: test_cmd_line
+```{automodule} test_cmd_line
    :members:
    :show-inheritance:
 

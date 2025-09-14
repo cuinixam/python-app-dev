@@ -9,16 +9,14 @@
 
 ## Implementation
 
-```{eval-rst}
-.. automodule:: py_app_dev.core.scoop_wrapper
+```{automodule} py_app_dev.core.scoop_wrapper
    :members:
    :show-inheritance:
 ```
 
 ## Testing
 
-```{eval-rst}
-.. automodule:: test_scoop_wrapper
+```{automodule} test_scoop_wrapper
    :members:
    :show-inheritance:
 
