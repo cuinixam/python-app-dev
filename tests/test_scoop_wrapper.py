@@ -31,6 +31,29 @@ def create_scoop_wrapper(scoop_executable: Path | None) -> ScoopWrapper:
     return scoop_wrapper
 
 
+def test_scoop_data_case_insensitive() -> None:
+    scoop_content = {
+        "buckets": [{"Name": "my_bucket", "Source": "https://github.com/my/bucket"}],
+        "apps": [
+            {
+                "Name": "app1",
+                "Source": "my_bucket",
+                "Version": "1.0.0",
+            },
+            {
+                "name": "app2",
+                "source": "my_bucket",
+                "version": "2.0.0",
+            },
+        ],
+    }
+    content = ScoopInstallConfigFile.from_dict(scoop_content)
+    assert content.buckets[0].name == "my_bucket"
+    assert {app.name for app in content.apps} == {"app1", "app2"}
+    # Check serialization back to dict
+    assert json.loads(content.to_json_string()) == scoop_content
+
+
 def test_scoop_installed(tmp_path: Path) -> None:
     scoop_exec = tmp_path / "scoop" / "my_scoop.ps1"
     scoop_exec.parent.mkdir(parents=True)
@@ -203,7 +226,7 @@ def test_scoop_file_parsing(tmp_path: Path) -> None:
     "required_apps, installed_apps, expected_app_versions, expected_exception",
     [
         (
-            [ScoopFileElement(name="app1", source="test", version=None)],
+            [ScoopFileElement.from_dict({"name": "app1", "source": "test", "version": None})],
             [
                 InstalledScoopApp(
                     name="app1",
@@ -226,7 +249,7 @@ def test_scoop_file_parsing(tmp_path: Path) -> None:
             None,
         ),
         (
-            [ScoopFileElement(name="app2", source="test", version="1.0.0")],
+            [ScoopFileElement.from_dict({"name": "app2", "source": "test", "version": "1.0.0"})],
             [
                 InstalledScoopApp(
                     name="app2",
@@ -241,7 +264,7 @@ def test_scoop_file_parsing(tmp_path: Path) -> None:
             None,
         ),
         (
-            [ScoopFileElement(name="app3", source="test", version="1.0.0")],
+            [ScoopFileElement.from_dict({"name": "app3", "source": "test", "version": "1.0.0"})],
             [
                 InstalledScoopApp(
                     name="app3",
@@ -256,7 +279,7 @@ def test_scoop_file_parsing(tmp_path: Path) -> None:
             UserNotificationException,  # version mismatch
         ),
         (
-            [ScoopFileElement(name="app4", source="test", version=None)],
+            [ScoopFileElement.from_dict({"name": "app4", "source": "test", "version": None})],
             [
                 InstalledScoopApp(
                     name="app1",
@@ -289,10 +312,10 @@ def test_map_required_apps_to_installed_apps(
 def test_do_install_missing(scoop_dir: Path) -> None:
     # Create a mock for scoop_install_config
     scoop_install_config = ScoopInstallConfigFile(
-        buckets=[ScoopFileElement(name="bucket1", source="source1")],
+        buckets=[ScoopFileElement.from_dict({"name": "bucket1", "source": "source1"})],
         apps=[
-            ScoopFileElement(name="app1", source="source1"),
-            ScoopFileElement(name="app2", source="source2"),
+            ScoopFileElement.from_dict({"name": "app1", "source": "source1"}),
+            ScoopFileElement.from_dict({"name": "app2", "source": "source2"}),
         ],
     )
 
@@ -354,7 +377,7 @@ def create_installed_list(apps: list[tuple[str, str]]) -> list[InstalledScoopApp
 def create_required_list(
     apps: list[tuple[str, str, str | None]],
 ) -> list[ScoopFileElement]:
-    return [ScoopFileElement(name=name, source=src, version=ver) for name, src, ver in apps]
+    return [ScoopFileElement.from_dict({"name": name, "source": src, "version": ver}) for name, src, ver in apps]
 
 
 @pytest.mark.parametrize(

@@ -5,9 +5,10 @@ from dataclasses import dataclass, field
 from functools import cmp_to_key
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any
+from typing import Any, Optional
 
-from mashumaro import DataClassDictMixin
+from mashumaro import field_options
+from mashumaro.config import BaseConfig
 from mashumaro.mixins.json import DataClassJSONMixin
 
 from .exceptions import UserNotificationException
@@ -53,13 +54,63 @@ def _semver_compare(v1: str, v2: str) -> int:
     return 0
 
 
+class BaseConfigJSONMixin(DataClassJSONMixin):
+    class Config(BaseConfig):
+        omit_none = True
+        serialize_by_alias = True
+
+    def to_json_string(self) -> str:
+        return json.dumps(self.to_dict(), indent=2)
+
+    def to_json_file(self, file_path: Path) -> None:
+        file_path.write_text(self.to_json_string())
+
+
 @dataclass
-class ScoopFileElement(DataClassDictMixin):
+class ScoopFileElement(BaseConfigJSONMixin):
     """Represents an app or bucket entry in the scoopfile.json."""
 
-    name: str = field(metadata={"alias": "Name"})
-    source: str = field(metadata={"alias": "Source"})
-    version: str | None = field(default=None, metadata={"alias": "Version"})
+    _name_lc: Optional[str] = field(default=None, metadata=field_options(alias="name"))
+    _name_uc: Optional[str] = field(default=None, metadata=field_options(alias="Name"))
+    #: Source bucket
+    _source_lc: Optional[str] = field(default=None, metadata=field_options(alias="source"))
+    _source_uc: Optional[str] = field(default=None, metadata=field_options(alias="Source"))
+
+    _version_lc: Optional[str] = field(default=None, metadata=field_options(alias="version"))
+    _version_uc: Optional[str] = field(default=None, metadata=field_options(alias="Version"))
+
+    @property
+    def name(self) -> str:
+        if self._name_uc:
+            return self._name_uc
+        elif self._name_lc:
+            return self._name_lc
+        else:
+            raise UserNotificationException("ScoopApp must have a 'Name' or 'name' field defined.")
+
+    @property
+    def source(self) -> str:
+        if self._source_uc:
+            return self._source_uc
+        elif self._source_lc:
+            return self._source_lc
+        else:
+            raise UserNotificationException("ScoopApp must have a 'Source' or 'source' field defined.")
+
+    @property
+    def version(self) -> Optional[str]:
+        if self._version_uc:
+            return self._version_uc
+        elif self._version_lc:
+            return self._version_lc
+        else:
+            return None
+
+    def __post_init__(self) -> None:
+        if not self._name_lc and not self._name_uc:
+            raise UserNotificationException("Scoop element must have a 'Name' or 'name' field defined.")
+        if not self._source_lc and not self._source_uc:
+            raise UserNotificationException("Scoop element must have a 'Source' or 'source' field defined.")
 
     def __hash__(self) -> int:
         return hash(f"{self.name}-{self.source}-{self.version}")
@@ -75,7 +126,7 @@ class ScoopFileElement(DataClassDictMixin):
 
 
 @dataclass
-class ScoopInstallConfigFile(DataClassJSONMixin):
+class ScoopInstallConfigFile(BaseConfigJSONMixin):
     """Represents the structure of the scoopfile.json."""
 
     buckets: list[ScoopFileElement]
@@ -93,10 +144,6 @@ class ScoopInstallConfigFile(DataClassJSONMixin):
     def from_file(cls, scoop_file: Path) -> "ScoopInstallConfigFile":
         with open(scoop_file) as f:
             return cls.from_dict(json.load(f))
-
-    def to_file(self, scoop_file: Path) -> None:
-        with open(scoop_file, "w") as f:
-            json.dump(self.to_dict(), f, indent=4)
 
 
 @dataclass
@@ -269,7 +316,7 @@ class ScoopWrapper:
         # Create a temporary scoopfile with the remaining apps to install and install them
         with TemporaryDirectory() as tmp_dir:
             tmp_scoop_file = Path(tmp_dir).joinpath("scoopfile.json")
-            ScoopInstallConfigFile(scoop_install_config.buckets, apps_to_install).to_file(tmp_scoop_file)
+            ScoopInstallConfigFile(scoop_install_config.buckets, apps_to_install).to_json_file(tmp_scoop_file)
             self.run_powershell_command(f"{self.scoop_script} import {tmp_scoop_file}")
         return apps_to_install
 
