@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v2.18.0 (2025-09-24)
+
+### Features
+
+- Add configs merge
+  ([`f2e77eb`](https://github.com/cuinixam/python-app-dev/commit/f2e77eb2a73ca5ca46aa94d998fb45c906c2c558))
+
+
 ## v2.17.0 (2025-09-14)
 
 ### Features
