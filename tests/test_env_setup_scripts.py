@@ -7,6 +7,7 @@ import pytest
 from py_app_dev.core.env_setup_scripts import (
     BatEnvSetupScriptGenerator,
     Ps1EnvSetupScriptGenerator,
+    ShEnvSetupScriptGenerator,
 )
 from py_app_dev.core.subprocess import SubprocessExecutor
 
@@ -111,3 +112,51 @@ def test_ps1_setup_script_integration(tmp_path: Path, sample_environment: dict[s
     assert process and process.returncode == 0
     assert "VAR1=value1" in process.stdout
     assert f"PATH={tmp_path.joinpath('dirA')}" in process.stdout
+
+
+def test_sh_setup_script(tmp_path: Path, sample_environment: dict[str, str], sample_install_dirs: list[Path]) -> None:
+    output_file = tmp_path / "setup_env.sh"
+    generator = ShEnvSetupScriptGenerator(
+        install_dirs=sample_install_dirs,
+        environment=sample_environment,
+        output_file=output_file,
+    )
+
+    generator.to_file()
+    content = output_file.read_text("utf-8")
+
+    path_parts = ":".join(str(d) for d in sample_install_dirs)
+    expected = dedent(f"""\
+        #!/bin/bash
+        export VAR1='value1'
+        export VAR2='value2 with spaces'
+        export PATH='{path_parts}':"$PATH"
+        """)
+    assert content == expected
+
+
+@pytest.mark.skipif(platform.system().lower() == "windows", reason="Requires Unix-like system")
+def test_sh_setup_script_integration(tmp_path: Path, sample_environment: dict[str, str], sample_install_dirs: list[Path]) -> None:
+    sh_script = tmp_path / "setup_env.sh"
+    gen = ShEnvSetupScriptGenerator(
+        install_dirs=sample_install_dirs,
+        environment=sample_environment,
+        output_file=sh_script,
+    )
+    gen.to_file()
+
+    # Make the script executable
+    sh_script.chmod(0o755)
+
+    # Create a runner script that sources the generated script and prints the variables
+    runner_sh = tmp_path / "runner.sh"
+    runner_sh.write_text(f'#!/bin/bash\nsource {sh_script}\necho "VAR1=$VAR1"\necho "VAR2=$VAR2"\necho "PATH=$PATH"\n')
+    runner_sh.chmod(0o755)
+
+    process = SubprocessExecutor([str(runner_sh)], capture_output=True, print_output=False, cwd=tmp_path).execute(handle_errors=False)
+
+    assert process and process.returncode == 0
+    assert "VAR1=value1" in process.stdout
+    assert "VAR2=value2 with spaces" in process.stdout
+    assert f"{tmp_path.joinpath('dirA')}" in process.stdout
+    assert f"{tmp_path.joinpath('dirB')}" in process.stdout

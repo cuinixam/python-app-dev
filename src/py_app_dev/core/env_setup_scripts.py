@@ -5,7 +5,7 @@ from .logging import logger
 
 
 class EnvSetupScriptGenerator(ABC):
-    """Abstract base class for generating windows environment setup scripts."""
+    """Abstract base class for generating environment setup scripts."""
 
     def __init__(self, install_dirs: list[Path], environment: dict[str, str], output_file: Path):
         self.logger = logger.bind()
@@ -67,6 +67,31 @@ class Ps1EnvSetupScriptGenerator(EnvSetupScriptGenerator):
             path_string = ";".join([str(path) for path in self.install_dirs])
             lines.append(f'$newPaths = "{path_string}"')
             lines.append("$env:PATH = $newPaths + [System.IO.Path]::PathSeparator + $env:PATH")
+        else:
+            self.logger.debug("No install directories provided for PATH update.")
+        lines.append("")
+
+        return "\n".join(lines)
+
+
+class ShEnvSetupScriptGenerator(EnvSetupScriptGenerator):
+    """Generates a bash/sh script to set environment variables and update PATH."""
+
+    def generate_content(self) -> str:
+        lines = ["#!/bin/bash"]
+
+        for key, value in self.environment.items():
+            # Escape single quotes by replacing ' with '\''
+            # This closes the string, adds an escaped quote, then reopens the string
+            escaped_value = value.replace("'", "'\\''")
+            # Use single quotes for the value to prevent variable expansion
+            lines.append(f"export {key}='{escaped_value}'")
+
+        if self.install_dirs:
+            path_string = ":".join([str(path) for path in self.install_dirs])
+            # Escape single quotes in paths
+            escaped_path_string = path_string.replace("'", "'\\''")
+            lines.append(f"export PATH='{escaped_path_string}':\"$PATH\"")
         else:
             self.logger.debug("No install directories provided for PATH update.")
         lines.append("")
