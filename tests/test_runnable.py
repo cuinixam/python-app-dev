@@ -247,3 +247,49 @@ def test_removed_input_files_trigger_execution(executor: Executor, tmp_path: Pat
 
     # This should detect the missing input file and require re-execution
     assert executor.previous_run_info_matches(runnable) == RunInfoStatus.INPUT_FILES_CHANGED
+
+
+class CustomIdRunnable(MyRunnable):
+    """Runnable with custom get_id() for unique identification."""
+
+    def __init__(self, custom_id: str) -> None:
+        super().__init__()
+        self._custom_id = custom_id
+
+    def get_id(self) -> str:
+        return f"{self.get_name()}_{self._custom_id}"
+
+
+def test_get_id_defaults_to_get_name() -> None:
+    runnable = MyRunnable()
+    assert runnable.get_id() == runnable.get_name()
+
+
+def test_custom_get_id_produces_unique_deps_files(executor: Executor) -> None:
+    runnable1 = CustomIdRunnable(custom_id="first")
+    runnable2 = CustomIdRunnable(custom_id="second")
+
+    # Different IDs should produce different deps file paths
+    path1 = executor.get_runnable_run_info_file(runnable1)
+    path2 = executor.get_runnable_run_info_file(runnable2)
+
+    assert path1 != path2
+    assert "first" in str(path1)
+    assert "second" in str(path2)
+
+
+def test_custom_get_id_deps_files_are_independent(executor: Executor, tmp_path: Path) -> None:
+    input_file = tmp_path / "input.txt"
+    input_file.write_text("content")
+
+    runnable1 = CustomIdRunnable(custom_id="first")
+    runnable1._inputs = [input_file]
+    runnable2 = CustomIdRunnable(custom_id="second")
+    runnable2._inputs = [input_file]
+
+    # Execute first runnable
+    executor.execute(runnable1)
+    assert executor.previous_run_info_matches(runnable1) == RunInfoStatus.MATCH
+
+    # Second runnable should still need to run (no previous info for its ID)
+    assert executor.previous_run_info_matches(runnable2) == RunInfoStatus.NO_INFO

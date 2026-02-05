@@ -20,6 +20,10 @@ class Runnable(ABC):
     def get_name(self) -> str:
         """Get runnable name."""
 
+    def get_id(self) -> str:
+        """Get unique identifier for dependency tracking. Defaults to get_name()."""
+        return self.get_name()
+
     @abstractmethod
     def get_inputs(self) -> list[Path]:
         """Get runnable dependencies."""
@@ -105,7 +109,7 @@ class Executor:
             json.dump(file_info, f, indent=4)
 
     def get_runnable_run_info_file(self, runnable: Runnable) -> Path:
-        return self.cache_dir / f"{runnable.get_name()}{self.RUN_INFO_FILE_EXTENSION}"
+        return self.cache_dir / f"{runnable.get_id()}{self.RUN_INFO_FILE_EXTENSION}"
 
     def previous_run_info_matches(self, runnable: Runnable) -> RunInfoStatus:
         if self.force_run:
