@@ -1,6 +1,17 @@
 # CHANGELOG
 
 
+## v2.19.0 (2026-02-05)
+
+### Features
+
+- Add env setup sh
+  ([`e6301bc`](https://github.com/cuinixam/python-app-dev/commit/e6301bc8acc9111e1d2fb57f431762707ce38551))
+
+- Add runnable id to track dependencies
+  ([`8106975`](https://github.com/cuinixam/python-app-dev/commit/810697581c2739ea39baa6527d3d3624e58ca6e3))
+
+
 ## v2.18.0 (2025-09-24)
 
 ### Features
