@@ -25,7 +25,7 @@ TConfig = TypeVar("TConfig", bound="BaseConfigDictMixin")
 
 
 @dataclass
-class BaseConfigJsonMixin(DataClassJSONMixin):
+class BaseConfigJSONMixin(DataClassJSONMixin):
     """Shared mixin providing mashumaro config and JSON file I/O."""
 
     class Config(BaseConfig):

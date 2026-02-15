@@ -7,7 +7,7 @@ import pytest
 
 from py_app_dev.core.config import (
     BaseConfigDictMixin,
-    BaseConfigJsonMixin,
+    BaseConfigJSONMixin,
     deep_merge,
     merge_configs,
 )
@@ -58,11 +58,11 @@ def test_merge_configs_override_none_value():
     assert merged.retries == 0, "Retries should be taken from the default value in override"
 
 
-# ---------- BaseConfigJsonMixin tests ----------
+# ---------- BaseConfigJSONMixin tests ----------
 
 
 @dataclass
-class SampleJsonConfig(BaseConfigJsonMixin):
+class SampleJsonConfig(BaseConfigJSONMixin):
     name: str = ""
     count: int = 0
     label: str | None = None
