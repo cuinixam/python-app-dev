@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v2.20.1 (2026-02-15)
+
+### Bug Fixes
+
+- Class name is not consistent
+  ([`dc17cf7`](https://github.com/cuinixam/python-app-dev/commit/dc17cf7c606d088d2ad8f447f235fd066574ed44))
+
+
 ## v2.20.0 (2026-02-15)
 
 ### Features
