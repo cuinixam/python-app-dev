@@ -1,5 +1,5 @@
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -109,3 +109,19 @@ def test_json_mixin_to_string() -> None:
     cfg = SampleJsonConfig(name="a", count=1)
 
     assert cfg.to_string() == cfg.to_json_string()
+
+
+@dataclass
+class ConfigWithAlias(BaseConfigJSONMixin):
+    internal_field: str = field(metadata={"alias": "externalName"})
+    regular_field: int = 0
+
+
+def test_json_mixin_serialize_by_alias() -> None:
+    cfg = ConfigWithAlias(internal_field="value", regular_field=42)
+    json_str = cfg.to_json_string()
+    parsed = json.loads(json_str)
+
+    assert "externalName" in parsed
+    assert parsed["externalName"] == "value"
+    assert "internal_field" not in parsed

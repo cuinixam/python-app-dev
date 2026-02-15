@@ -30,6 +30,7 @@ class BaseConfigJSONMixin(DataClassJSONMixin):
 
     class Config(BaseConfig):
         omit_none = True
+        serialize_by_alias = True
 
     @classmethod
     def from_json_file(cls, file_path: Path) -> Self:
