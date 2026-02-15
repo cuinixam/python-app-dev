@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from functools import cmp_to_key
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Any, Optional
+from typing import Any
 
 from mashumaro import field_options
 from mashumaro.config import BaseConfig
@@ -70,14 +70,14 @@ class BaseConfigJSONMixin(DataClassJSONMixin):
 class ScoopFileElement(BaseConfigJSONMixin):
     """Represents an app or bucket entry in the scoopfile.json."""
 
-    _name_lc: Optional[str] = field(default=None, metadata=field_options(alias="name"))
-    _name_uc: Optional[str] = field(default=None, metadata=field_options(alias="Name"))
+    _name_lc: str | None = field(default=None, metadata=field_options(alias="name"))
+    _name_uc: str | None = field(default=None, metadata=field_options(alias="Name"))
     #: Source bucket
-    _source_lc: Optional[str] = field(default=None, metadata=field_options(alias="source"))
-    _source_uc: Optional[str] = field(default=None, metadata=field_options(alias="Source"))
+    _source_lc: str | None = field(default=None, metadata=field_options(alias="source"))
+    _source_uc: str | None = field(default=None, metadata=field_options(alias="Source"))
 
-    _version_lc: Optional[str] = field(default=None, metadata=field_options(alias="version"))
-    _version_uc: Optional[str] = field(default=None, metadata=field_options(alias="Version"))
+    _version_lc: str | None = field(default=None, metadata=field_options(alias="version"))
+    _version_uc: str | None = field(default=None, metadata=field_options(alias="Version"))
 
     @property
     def name(self) -> str:
@@ -98,7 +98,7 @@ class ScoopFileElement(BaseConfigJSONMixin):
             raise UserNotificationException("ScoopApp must have a 'Source' or 'source' field defined.")
 
     @property
-    def version(self) -> Optional[str]:
+    def version(self) -> str | None:
         if self._version_uc:
             return self._version_uc
         elif self._version_lc:

@@ -2,7 +2,6 @@ from argparse import ArgumentParser, Namespace
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from pathlib import Path
-from typing import Optional, Union
 
 import pytest
 
@@ -74,7 +73,7 @@ def test_duplicate_commands():
 class MyConfigDataclass:
     my_first_arg: Path = field(metadata={"help": "Some help for arg1."})
     arg: str = field(default="value1", metadata={"help": "Some help for arg1."})
-    opt_arg: Optional[str] = field(default=None, metadata={"help": "Some help for arg1."})
+    opt_arg: str | None = field(default=None, metadata={"help": "Some help for arg1."})
     opt_arg_bool: bool | None = field(
         default=False,
         metadata={
@@ -85,14 +84,14 @@ class MyConfigDataclass:
 
 
 def test_is_type_optional():
-    assert is_type_optional(Optional[str])
+    assert is_type_optional(str | None)
     assert not is_type_optional(str)
-    assert is_type_optional(Union[Path | None, str])
+    assert is_type_optional((Path | str) | None)
     # Test modern union syntax (Python 3.10+)
     assert is_type_optional(Path | None)
     assert is_type_optional(str | None)
     assert not is_type_optional(Path | str)  # Union without None should not be optional
-    assert not is_type_optional(Union[Path, str])
+    assert not is_type_optional(Path | str)
 
 
 def test_register_arguments_for_config_dataclass():
