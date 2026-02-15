@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v2.20.0 (2026-02-15)
+
+### Features
+
+- Add base config mixin class
+  ([`25293fe`](https://github.com/cuinixam/python-app-dev/commit/25293fe661d7a7674c2f3c40fbb9e44f0de1f438))
+
+
 ## v2.19.0 (2026-02-05)
 
 ### Features
