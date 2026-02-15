@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v2.20.2 (2026-02-15)
+
+### Bug Fixes
+
+- Base json config does not use alias
+  ([`ccbd402`](https://github.com/cuinixam/python-app-dev/commit/ccbd402551e61522dfbb97a53101b0e93963120d))
+
+
 ## v2.20.1 (2026-02-15)
 
 ### Bug Fixes
