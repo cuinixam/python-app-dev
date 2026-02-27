@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v2.21.0 (2026-02-27)
+
+### Features
+
+- Add timeout support for subprocess execution
+  ([`01d76d7`](https://github.com/cuinixam/python-app-dev/commit/01d76d7c2da946b3850fd672d96e00c44d7e331d))
+
+
 ## v2.20.2 (2026-02-15)
 
 ### Bug Fixes
