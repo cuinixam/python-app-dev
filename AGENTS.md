@@ -9,7 +9,7 @@ This document provides guidance for AI agents and contributors working on the `p
 - **Package name**: `py-app-dev`
 - **Python version**: 3.10+
 - **Package manager**: [uv](https://docs.astral.sh/uv/)
-- **Build backend**: Poetry
+- **Build backend**: uv
 - **CI/CD**: GitHub Actions with semantic-release
 
 ## Repository Structure
