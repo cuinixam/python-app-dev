@@ -24,6 +24,7 @@ dependencies = [
     "mashumaro<4.0,>=3.5",
     "loguru<1.0,>=0.7",
     "psutil>=7.1,<8.0",
+    "pyyaml>=6.0,<7.0",
 ]
 urls."Bug Tracker" = "https://github.com/cuinixam/py-app-dev/issues"
 urls.Changelog = "https://github.com/cuinixam/py-app-dev/blob/main/CHANGELOG.md"

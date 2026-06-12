@@ -8,9 +8,13 @@ import pytest
 from py_app_dev.core.config import (
     BaseConfigDictMixin,
     BaseConfigJSONMixin,
+    ConfigFile,
     deep_merge,
     merge_configs,
+    merge_named_elements,
+    parse_dict_from_file,
 )
+from py_app_dev.core.exceptions import UserNotificationException
 
 
 @dataclass
@@ -125,3 +129,165 @@ def test_json_mixin_serialize_by_alias() -> None:
     assert "externalName" in parsed
     assert parsed["externalName"] == "value"
     assert "internal_field" not in parsed
+
+
+# ---------- parse_dict_from_file ----------
+
+
+@pytest.mark.parametrize(
+    ("file_name", "content"),
+    [
+        ("config.json", '{"name": "app", "count": 7}'),
+        ("config.yaml", "name: app\ncount: 7"),
+        ("config.yml", "name: app\ncount: 7"),
+    ],
+)
+def test_parse_dict_from_file(tmp_path: Path, file_name: str, content: str) -> None:
+    file = tmp_path / file_name
+    file.write_text(content)
+
+    assert parse_dict_from_file(file) == {"name": "app", "count": 7}
+
+
+@pytest.mark.parametrize(
+    ("file_name", "content"),
+    [
+        ("config.json", "{ not valid json"),
+        ("config.yaml", "key: [unclosed"),
+        ("config.txt", "name: app"),
+    ],
+)
+def test_parse_dict_from_file_errors(tmp_path: Path, file_name: str, content: str) -> None:
+    file = tmp_path / file_name
+    file.write_text(content)
+
+    with pytest.raises(UserNotificationException, match=file_name):
+        parse_dict_from_file(file)
+
+
+# ---------- ConfigFile ----------
+
+
+class SampleJsonConfigFile(ConfigFile[SampleJsonConfig]):
+    pass
+
+
+def test_config_file_from_file_stamps_source(tmp_path: Path) -> None:
+    file = tmp_path / "config.json"
+    file.write_text(json.dumps({"name": "app", "count": 7}))
+
+    config_file = SampleJsonConfigFile.from_file(file)
+
+    assert config_file.payload == SampleJsonConfig(name="app", count=7)
+    assert config_file.file == file
+
+
+def test_config_file_from_file_corrupt_raises(tmp_path: Path) -> None:
+    file = tmp_path / "config.json"
+    file.write_text("{ not valid json")
+
+    with pytest.raises(UserNotificationException, match="config.json"):
+        SampleJsonConfigFile.from_file(file)
+
+
+def test_config_file_from_dict_has_no_source_file() -> None:
+    config_file = SampleJsonConfigFile.from_dict({"name": "app"})
+
+    assert config_file.payload.name == "app"
+    assert config_file.file is None
+
+
+def test_config_file_requires_bound_payload_type() -> None:
+    with pytest.raises(TypeError, match="ConfigFile"):
+        ConfigFile.from_dict({"name": "app"})
+
+
+# ---------- merge_named_elements ----------
+
+
+@dataclass
+class NamedElement:
+    name: str
+    value: str
+
+
+def test_merge_named_elements_unions_by_name() -> None:
+    target = [NamedElement("first", "1")]
+
+    merge_named_elements(target, [NamedElement("second", "2")])
+
+    assert target == [NamedElement("first", "1"), NamedElement("second", "2")]
+
+
+def test_merge_named_elements_later_overrides_earlier() -> None:
+    target = [NamedElement("first", "1"), NamedElement("second", "2")]
+
+    merge_named_elements(target, [NamedElement("first", "override")])
+
+    assert target == [NamedElement("first", "override"), NamedElement("second", "2")]
+
+
+def test_merge_named_elements_ignores_true_duplicates() -> None:
+    target = [NamedElement("first", "1")]
+
+    merge_named_elements(target, [NamedElement("first", "1")])
+
+    assert target == [NamedElement("first", "1")]
+
+
+# ---------- BaseConfigDictMixin alias ----------
+
+
+@dataclass
+class DictConfigWithAlias(BaseConfigDictMixin):
+    internal_field: str = field(metadata={"alias": "external-name"})
+
+
+def test_dict_mixin_serialize_by_alias() -> None:
+    parsed = DictConfigWithAlias(internal_field="value").to_dict()
+
+    assert parsed == {"external-name": "value"}
+
+
+# ---------- End-to-end: three sources, override order, stored result ----------
+
+
+@dataclass
+class ToolEntry(BaseConfigJSONMixin):
+    name: str
+    version: str
+
+
+@dataclass
+class ToolsConfig(BaseConfigJSONMixin):
+    tools: list[ToolEntry] = field(default_factory=list)
+
+
+class ToolsConfigFile(ConfigFile[ToolsConfig]):
+    pass
+
+
+def test_three_config_files_merge_with_override_and_store_result(tmp_path: Path) -> None:
+    base_file = tmp_path / "base.json"
+    base_file.write_text(json.dumps({"tools": [{"name": "cmake", "version": "3.28.1"}, {"name": "ninja", "version": "1.11.1"}]}))
+    level1_file = tmp_path / "level1.yaml"
+    level1_file.write_text("tools:\n  - name: cmake\n    version: 3.29.0\n  - name: gcc\n    version: '12'")
+    level2_file = tmp_path / "level2.yaml"
+    level2_file.write_text("tools:\n  - name: gcc\n    version: '13'\n  - name: make\n    version: '4.4'")
+
+    sources = [ToolsConfigFile.from_file(file) for file in (base_file, level1_file, level2_file)]
+    assert [source.file for source in sources] == [base_file, level1_file, level2_file]
+
+    merged = ToolsConfig()
+    for source in sources:
+        merge_named_elements(merged.tools, source.payload.tools)
+
+    result_file = tmp_path / "merged.json"
+    merged.to_json_file(result_file)
+
+    stored = ToolsConfig.from_file(result_file)
+    versions = {tool.name: tool.version for tool in stored.tools}
+    # Base is the union foundation; each later file overrides by name (git-config order).
+    assert versions == {"cmake": "3.29.0", "ninja": "1.11.1", "gcc": "13", "make": "4.4"}
+    # The stored result is pure payload - no provenance keys leak into the file.
+    assert set(json.loads(result_file.read_text()).keys()) == {"tools"}

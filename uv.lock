@@ -1240,6 +1240,7 @@ dependencies = [
     { name = "loguru" },
     { name = "mashumaro" },
     { name = "psutil" },
+    { name = "pyyaml" },
 ]
 
 [package.dev-dependencies]
@@ -1264,6 +1265,7 @@ requires-dist = [
     { name = "loguru", specifier = ">=0.7,<1.0" },
     { name = "mashumaro", specifier = ">=3.5,<4.0" },
     { name = "psutil", specifier = ">=7.1,<8.0" },
+    { name = "pyyaml", specifier = ">=6.0,<7.0" },
 ]
 
 [package.metadata.requires-dev]
