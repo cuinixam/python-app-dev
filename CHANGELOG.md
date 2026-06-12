@@ -1,6 +1,17 @@
 # CHANGELOG
 
 
+## v2.22.0 (2026-06-12)
+
+### Features
+
+- Support config with location tracing
+  ([`ea71583`](https://github.com/cuinixam/python-app-dev/commit/ea71583de05425b0744c6ae58d4dbef2a75a81dc))
+
+- **config**: Support merging named elements
+  ([`4915d4a`](https://github.com/cuinixam/python-app-dev/commit/4915d4a7ff1bb9c9f4bada7386ccaf0832158bad))
+
+
 ## v2.21.0 (2026-02-27)
 
 ### Features
