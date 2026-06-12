@@ -1,7 +1,27 @@
 # Logging != print()
 
-Logging is not the same as printing to the console. Logging is a more sophisticated way of recording events in a program.
-It is a way to track the flow of the program and to record errors and exceptions.
+Logging records the flow of a program, including its errors and exceptions, to the console and to a file at once. It is more than printing.
+
+## Usage
+
+Call `setup_logger` once at startup, then use the shared `logger` everywhere. The `time_it` decorator logs how long a function takes:
+
+```python
+from pathlib import Path
+
+from py_app_dev.core.logging import logger, setup_logger, time_it
+
+
+@time_it()
+def build() -> None:
+    logger.info("building ...")
+
+
+setup_logger(Path("build.log"))  # console + file
+build()
+```
+
+## Requirements
 
 ```{item} REQ-LOGGING_FILE-0.0.1 Print to file
 
@@ -41,7 +61,7 @@ It is a way to track the flow of the program and to record errors and exceptions
 ```
 
 :::{note}
-This module is based on the [loguru](https://github.com/Delgan/loguru) library, which is a Python logging library that provides powerful logging system.
+This module is built on the [loguru](https://github.com/Delgan/loguru) logging library.
 :::
 
 ## Current Status
