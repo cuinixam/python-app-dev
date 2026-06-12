@@ -13,6 +13,7 @@ from py_app_dev.core.config import (
     merge_configs,
     merge_named_elements,
     parse_dict_from_file,
+    parse_located_dict_from_file,
 )
 from py_app_dev.core.exceptions import UserNotificationException
 
@@ -163,6 +164,35 @@ def test_parse_dict_from_file_errors(tmp_path: Path, file_name: str, content: st
 
     with pytest.raises(UserNotificationException, match=file_name):
         parse_dict_from_file(file)
+
+
+@pytest.mark.parametrize(
+    ("content", "expected_finding"),
+    [
+        ("", "the file is empty"),
+        ("- one\n- two", "a list"),
+        ("just-a-string", "a single value"),
+    ],
+)
+def test_parse_dict_from_file_explains_non_mapping_content(tmp_path: Path, content: str, expected_finding: str) -> None:
+    file = tmp_path / "config.yaml"
+    file.write_text(content)
+
+    with pytest.raises(UserNotificationException, match=expected_finding):
+        parse_dict_from_file(file)
+
+
+def test_only_located_parse_carries_positions(tmp_path: Path) -> None:
+    file = tmp_path / "config.yaml"
+    file.write_text("name: app")
+
+    plain = parse_dict_from_file(file)
+    located = parse_located_dict_from_file(file)
+
+    # Same content either way; only the explicit located variant attaches the position attribute.
+    assert plain == located
+    assert getattr(plain, "location", None) is None
+    assert getattr(located, "location", None) is not None
 
 
 # ---------- ConfigFile ----------
