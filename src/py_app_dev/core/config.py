@@ -1,22 +1,15 @@
 import json
-import sys
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Generic, Protocol, TypeVar, cast, get_args, get_origin
+from typing import Any, Generic, Protocol, Self, TypeVar, cast, get_args, get_origin
 
 import yaml
 from mashumaro import DataClassDictMixin
 from mashumaro.config import BaseConfig
 from mashumaro.exceptions import InvalidFieldValue, MissingField
-
-if sys.version_info >= (3, 11):
-    from typing import Self
-else:
-    from typing_extensions import Self
-
 from mashumaro.mixins.json import DataClassJSONMixin
 
 from .exceptions import UserNotificationException

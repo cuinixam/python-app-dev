@@ -7,7 +7,7 @@ This document provides guidance for AI agents and contributors working on the `p
 **py-app-dev** is a Python library providing application development modules. The codebase follows modern Python practices with strict type checking and comprehensive testing.
 
 - **Package name**: `py-app-dev`
-- **Python version**: 3.10+
+- **Python version**: 3.11+
 - **Package manager**: [uv](https://docs.astral.sh/uv/)
 - **Build backend**: uv
 - **CI/CD**: GitHub Actions with semantic-release
