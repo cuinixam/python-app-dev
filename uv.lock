@@ -989,7 +989,7 @@ wheels = [
 
 [[package]]
 name = "py-app-dev"
-version = "2.23.0"
+version = "2.23.1"
 source = { editable = "." }
 dependencies = [
     { name = "loguru" },

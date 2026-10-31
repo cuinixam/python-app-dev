@@ -1,6 +1,20 @@
 # CHANGELOG
 
 
+## v2.23.1 (2026-10-31)
+
+### Bug Fixes
+
+- Detect reserved config fields on python 3.14
+  ([`b725aa2`](https://github.com/cuinixam/python-app-dev/commit/b725aa292b91c58e6166305a13346c28ac20e936))
+
+- Update certifi for the emSign CA incident
+  ([`ea4735c`](https://github.com/cuinixam/python-app-dev/commit/ea4735c11045a7237c23c1e1224f047d5c901874))
+
+- Update mashumaro for python 3.14
+  ([`77962c2`](https://github.com/cuinixam/python-app-dev/commit/77962c2e42fa9cabff0ec7e0d58d4bf62e18ec81))
+
+
 ## v2.23.0 (2026-09-15)
 
 ### Features
