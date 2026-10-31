@@ -1,4 +1,5 @@
 import json
+import sys
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
@@ -14,6 +15,9 @@ from mashumaro.mixins.json import DataClassJSONMixin
 
 from .exceptions import UserNotificationException
 from .logging import logger
+
+if sys.version_info >= (3, 14):
+    import annotationlib
 
 
 class BaseConfigDictMixin(DataClassDictMixin):
@@ -195,7 +199,11 @@ class ConfigElement(BaseConfigDictMixin):
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
         super().__init_subclass__(**kwargs)
-        annotations = cls.__dict__.get("__annotations__", {})
+        if sys.version_info >= (3, 14):
+            # Since 3.14 annotations are lazy and no longer in __dict__; FORWARDREF reads the names without evaluating them.
+            annotations = annotationlib.get_annotations(cls, format=annotationlib.Format.FORWARDREF)
+        else:
+            annotations = cls.__dict__.get("__annotations__", {})
         for reserved_name in (SOURCE_LOCATION_KEY, "location"):
             if reserved_name in annotations:
                 raise TypeError(f"{cls.__name__} must not declare a '{reserved_name}' field - it is reserved by ConfigElement for source provenance.")
